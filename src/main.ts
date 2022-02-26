@@ -8,6 +8,7 @@ import { TopLevelSpec, compile } from 'vega-lite'
 import { View, parse } from 'vega'
 import fs from 'fs'
 import { from } from 'svg-to-img'
+import { arange, multiply, sum } from 'numjs'
 
 dotenv.config()
 
@@ -55,17 +56,36 @@ const Tags = sequelize.define('tags', {
 
 Tags.sync()
 
+export function zip<S1, S2> (
+  firstCollection: Array<S1>,
+  lastCollection: Array<S2>,
+): Array<[S1, S2]> {
+  const length = Math.min(firstCollection.length, lastCollection.length)
+  const zipped: Array<[S1, S2]> = []
+
+  for (let index = 0; index < length; index++) {
+    zipped.push([firstCollection[index], lastCollection[index]])
+  }
+
+  return zipped
+}
+
 const client = new Client({
   intents: ['GUILDS', 'GUILD_MEMBERS', 'GUILD_MESSAGES'],
 })
 
 client.once('ready', async () => {
+  if (fs.existsSync('dest.png')) {
+    fs.unlinkSync('dest.png')
+  }
   console.log('Now this bot is ready!')
   console.log(client.user?.tag)
   client.user?.setActivity('しゃろしゃろ')
   const now = new Date()
+  console.log(now)
   const db = await Tags.findAll({
     raw: true,
+    order: [['record.rate', 'DESC']],
   })
   cron.schedule('4 0 * * *', () => {
     nodeHtmlToImage({
@@ -100,12 +120,16 @@ client.once('ready', async () => {
       </thead>
       <tbody>` +
         db.map((item: any, index) => {
+          const diff =
+            Math.sign(item.rating - item.record.slice(-1).rate) === 1
+              ? '+' + (item.rating - item.record.slice(-1).rate).toString
+              : item.rating - item.record.slice(-1).rate
           return `<tr>
           <td>${index}</td>
           <td>${item.name}</td>
           <td></td>
           <td>${item.rating}</td>
-          <td></td>`
+          <td>${diff}</td>`
         }) +
         `</tbody>
       </table>
@@ -120,20 +144,20 @@ client.on('messageCreate', async (message: Message) => {
   if (message.author.bot) return
   if (message.content.startsWith('しゃろほー')) {
     if (
-      // (now.getHours() === 23 || now.getHours() === 0) &&
-      now.getMinutes() === 59 ||
+      ((now.getHours() === 23 || now.getHours() === 0) &&
+        now.getMinutes() === 59) ||
       now.getMinutes() === 0
     ) {
+      console.log('new message')
       const author = message.author.username
       const id = message.author.id
       // eslint-disable-next-line new-cap
-      const date = new timestamp(message.author.createdAt)
+      const date = new timestamp(message.createdAt)
       // YYYY-MM-DD hh:mm:ss.ms
       const createdAt = `${date.getYear()}/${date.getMonth()}/${date.getDay()} ${date.getHour()}:${date.getMinute()}:${date.getSeconds()}.${date.getMilliseconds()}`
-      const idTag = await Tags.findOne({ where: { id: id } })
+      const idTag: any = await Tags.findOne({ where: { id: id } })
       const best = createdAt.substring(10)
       if (idTag) {
-        idTag.increment('part')
         const newTime = new Date(createdAt)
         // @ts-ignore
         const lastTime = new Date(idTag.get('last'))
@@ -148,46 +172,67 @@ client.on('messageCreate', async (message: Message) => {
         if (lastTimeDiff > newTimeDiff) {
           await Tags.update({ best: best }, { where: { id: id } })
         }
-        const rate = 0
+        let weight: any = Array(idTag.get('part')).fill(0.9)
+        weight = arange(0, idTag.get('part'), 1).tolist().reverse()
+        weight = weight.map(function (a: any) {
+          return a ** a
+        })
+
+        const perfHist: number[] = []
+        // eslint-disable-next-line array-callback-return
+        idTag.get('record').map((item: any) => {
+          perfHist.push(item.perf)
+        })
+        const aperf: any = multiply(perfHist, weight)
+          .tolist()
+          .map((x: any) => x / sum(weight))
+
         const record: any = idTag.get('record')
         const data = {
           date: createdAt.substring(0, -3),
-          rate: rate,
+          aperf: aperf,
+          rate: aperf,
         }
         record.push(data)
+        idTag.increment('part')
         await Tags.update(
-          { last: createdAt, record: record },
+          { last: createdAt, record: [record] },
           { where: { id: id } },
         )
       } else {
-        try {
-          const rate = 0
-          const data = {
-            date: createdAt,
-            rate: rate,
-          }
-          const tag = await Tags.create({
-            id: id,
-            name: author,
-            best: createdAt.substring(10),
-            last: createdAt,
-            record: data,
-          })
-          tag.increment('part')
-        } catch (error) {
-          if (error instanceof Error) {
-            if (error.name === 'SequelizeUniqueConstraintError') {
-              console.log('unique')
-            }
-          }
+        const data = {
+          date: createdAt,
+          aperf: 0,
+          perf: [],
+          rate: 0,
+          rank: 0.5,
         }
+        const tag: any = await Tags.create({
+          id: id,
+          name: author,
+          best: createdAt.substring(10),
+          last: createdAt,
+          record: [data],
+        })
+        const aperf = 1600
+
+        tag.increment('part')
+        const newData = {
+          date: createdAt.substring(0, -3),
+          aperf: aperf,
+          rate: aperf,
+        }
+        Tags.update(
+          { last: createdAt, record: [newData] },
+          { where: { id: id } },
+        )
       }
     }
   }
   if (
     // @ts-ignore
     message.mentions.has(client.user.id) ||
-    message.content.startsWith('ランク' || 'らんく')
+    message.content.startsWith('ランク' || 'らんく' || 'rank' || 'Rank')
   ) {
     const id = message.author.id
     const idTag = await Tags.findOne({ where: { id: id } })
@@ -258,7 +303,7 @@ client.on('messageCreate', async (message: Message) => {
                 {
                   classification: 'red',
                   y: 2800,
-                  y2: 3200,
+                  y2: 3600,
                 },
               ],
             },
@@ -339,27 +384,27 @@ client.on('messageCreate', async (message: Message) => {
 
           try {
             fs.writeFileSync('dest.png', image)
+            const file = new MessageAttachment('./dest.png')
+            message.reply({
+              content:
+                idTag.get('name') +
+                '\nレーティング：' +
+                idTag.get('rating') +
+                '\n優勝 / 参加回数：' +
+                idTag.get('win') +
+                ' / ' +
+                idTag.get('part') +
+                '\nベスト記録：' +
+                idTag.get('best'),
+              files: [file],
+            })
           } catch (e) {
             console.log(e)
           }
         })()
-        const file = new MessageAttachment('./dest.png')
-        message.reply({
-          content:
-            idTag.get('name') +
-            '\nレーティング：' +
-            idTag.get('rating') +
-            '\n優勝 / 参加回数：' +
-            idTag.get('win') +
-            ' / ' +
-            idTag.get('part') +
-            '\nベスト記録：' +
-            idTag.get('best'),
-          files: [file],
-        })
       })
     } else {
-      message.reply('取得に失敗しました')
+      message.reply('登録されていません。')
     }
   }
 })

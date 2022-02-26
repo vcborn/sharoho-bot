@@ -12,6 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.zip = void 0;
 const discord_js_1 = require("discord.js");
 const dotenv_1 = __importDefault(require("dotenv"));
 const sequelize_1 = require("sequelize");
@@ -22,6 +23,7 @@ const vega_lite_1 = require("vega-lite");
 const vega_1 = require("vega");
 const fs_1 = __importDefault(require("fs"));
 const svg_to_img_1 = require("svg-to-img");
+const numjs_1 = require("numjs");
 dotenv_1.default.config();
 const sequelize = new sequelize_1.Sequelize('database', 'user', 'password', {
     host: 'localhost',
@@ -64,17 +66,32 @@ const Tags = sequelize.define('tags', {
     last: sequelize_1.STRING,
 });
 Tags.sync();
+const test = 25;
+function zip(firstCollection, lastCollection) {
+    const length = Math.min(firstCollection.length, lastCollection.length);
+    const zipped = [];
+    for (let index = 0; index < length; index++) {
+        zipped.push([firstCollection[index], lastCollection[index]]);
+    }
+    return zipped;
+}
+exports.zip = zip;
 const client = new discord_js_1.Client({
     intents: ['GUILDS', 'GUILD_MEMBERS', 'GUILD_MESSAGES'],
 });
 client.once('ready', () => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
+    if (fs_1.default.existsSync('dest.png')) {
+        fs_1.default.unlinkSync('dest.png');
+    }
     console.log('Now this bot is ready!');
     console.log((_a = client.user) === null || _a === void 0 ? void 0 : _a.tag);
     (_b = client.user) === null || _b === void 0 ? void 0 : _b.setActivity('しゃろしゃろ');
     const now = new Date();
+    console.log(now);
     const db = yield Tags.findAll({
         raw: true,
+        order: [['record.rate', 'DESC']],
     });
     node_cron_1.default.schedule('4 0 * * *', () => {
         (0, node_html_to_image_1.default)({
@@ -108,12 +125,15 @@ client.once('ready', () => __awaiter(void 0, void 0, void 0, function* () {
       </thead>
       <tbody>` +
                 db.map((item, index) => {
+                    const diff = Math.sign(item.rating - item.record.slice(-1).rate) === 1
+                        ? '+' + (item.rating - item.record.slice(-1).rate).toString
+                        : item.rating - item.record.slice(-1).rate;
                     return `<tr>
           <td>${index}</td>
           <td>${item.name}</td>
           <td></td>
           <td>${item.rating}</td>
-          <td></td>`;
+          <td>${diff}</td>`;
                 }) +
                 `</tbody>
       </table>
@@ -129,69 +149,85 @@ client.on('messageCreate', (message) => __awaiter(void 0, void 0, void 0, functi
     if (message.content.startsWith('しゃろほー')) {
         if (
         // (now.getHours() === 23 || now.getHours() === 0) &&
-        now.getMinutes() === 59 ||
-            now.getMinutes() === 0) {
+        // now.getMinutes() === 59 ||
+        // now.getMinutes() === 0
+        // eslint-disable-next-line no-constant-condition
+        true) {
+            console.log('new message');
             const author = message.author.username;
             const id = message.author.id;
             // eslint-disable-next-line new-cap
-            const date = new timestamp_conv_1.timestamp(message.author.createdAt);
+            const date = new timestamp_conv_1.timestamp(message.createdAt);
             // YYYY-MM-DD hh:mm:ss.ms
             const createdAt = `${date.getYear()}/${date.getMonth()}/${date.getDay()} ${date.getHour()}:${date.getMinute()}:${date.getSeconds()}.${date.getMilliseconds()}`;
             const idTag = yield Tags.findOne({ where: { id: id } });
             const best = createdAt.substring(10);
             if (idTag) {
-                idTag.increment('part');
                 const newTime = new Date(createdAt);
                 // @ts-ignore
                 const lastTime = new Date(idTag.get('last'));
-                const newTimeDiff = newTime.getMinutes() === 59
+                const newTimeDiff = newTime.getMinutes() === test
                     ? 60 - newTime.getSeconds()
                     : newTime.getSeconds();
-                const lastTimeDiff = lastTime.getMinutes() === 59
+                const lastTimeDiff = lastTime.getMinutes() === test
                     ? 60 - lastTime.getSeconds()
                     : lastTime.getSeconds();
                 if (lastTimeDiff > newTimeDiff) {
                     yield Tags.update({ best: best }, { where: { id: id } });
                 }
-                const rate = 0;
+                let weight = Array(idTag.get('part')).fill(0.9);
+                weight = (0, numjs_1.arange)(0, idTag.get('part'), 1).tolist().reverse();
+                weight = weight.map(function (a) {
+                    return a ** a;
+                });
+                const perfHist = [];
+                // eslint-disable-next-line array-callback-return
+                idTag.get('record').map((item) => {
+                    perfHist.push(item.perf);
+                });
+                const aperf = (0, numjs_1.multiply)(perfHist, weight)
+                    .tolist()
+                    .map((x) => x / (0, numjs_1.sum)(weight));
                 const record = idTag.get('record');
                 const data = {
                     date: createdAt.substring(0, -3),
-                    rate: rate,
+                    aperf: aperf,
+                    rate: aperf,
                 };
                 record.push(data);
-                yield Tags.update({ last: createdAt, record: record }, { where: { id: id } });
+                idTag.increment('part');
+                yield Tags.update({ last: createdAt, record: [record] }, { where: { id: id } });
             }
             else {
-                try {
-                    const rate = 0;
-                    const data = {
-                        date: createdAt,
-                        rate: rate,
-                    };
-                    const tag = yield Tags.create({
-                        id: id,
-                        name: author,
-                        best: createdAt.substring(10),
-                        last: createdAt,
-                        record: data,
-                    });
-                    tag.increment('part');
-                }
-                catch (error) {
-                    if (error instanceof Error) {
-                        if (error.name === 'SequelizeUniqueConstraintError') {
-                            console.log('unique');
-                        }
-                    }
-                }
+                const data = {
+                    date: createdAt,
+                    aperf: 0,
+                    perf: [],
+                    rate: 0,
+                    rank: 0.5,
+                };
+                const tag = yield Tags.create({
+                    id: id,
+                    name: author,
+                    best: createdAt.substring(10),
+                    last: createdAt,
+                    record: [data],
+                });
+                const aperf = 1600;
+                tag.increment('part');
+                const newData = {
+                    date: createdAt.substring(0, -3),
+                    aperf: aperf,
+                    rate: aperf,
+                };
+                Tags.update({ last: createdAt, record: [newData] }, { where: { id: id } });
             }
         }
     }
     if (
     // @ts-ignore
     message.mentions.has(client.user.id) ||
-        message.content.startsWith('ランク' || 'らんく')) {
+        message.content.startsWith('ランク' || 'らんく' || 'rank' || 'Rank')) {
         const id = message.author.id;
         const idTag = yield Tags.findOne({ where: { id: id } });
         if (idTag) {
@@ -261,7 +297,7 @@ client.on('messageCreate', (message) => __awaiter(void 0, void 0, void 0, functi
                                 {
                                     classification: 'red',
                                     y: 2800,
-                                    y2: 3200,
+                                    y2: 3600,
                                 },
                             ],
                         },
@@ -342,28 +378,28 @@ client.on('messageCreate', (message) => __awaiter(void 0, void 0, void 0, functi
                     const image = yield (0, svg_to_img_1.from)(svg).toPng();
                     try {
                         fs_1.default.writeFileSync('dest.png', image);
+                        const file = new discord_js_1.MessageAttachment('./dest.png');
+                        message.reply({
+                            content: idTag.get('name') +
+                                '\nレーティング：' +
+                                idTag.get('rating') +
+                                '\n優勝 / 参加回数：' +
+                                idTag.get('win') +
+                                ' / ' +
+                                idTag.get('part') +
+                                '\nベスト記録：' +
+                                idTag.get('best'),
+                            files: [file],
+                        });
                     }
                     catch (e) {
                         console.log(e);
                     }
                 }))();
-                const file = new discord_js_1.MessageAttachment('./dest.png');
-                message.reply({
-                    content: idTag.get('name') +
-                        '\nレーティング：' +
-                        idTag.get('rating') +
-                        '\n優勝 / 参加回数：' +
-                        idTag.get('win') +
-                        ' / ' +
-                        idTag.get('part') +
-                        '\nベスト記録：' +
-                        idTag.get('best'),
-                    files: [file],
-                });
             });
         }
         else {
-            message.reply('取得に失敗しました');
+            message.reply('登録されていません。');
         }
     }
 }));
