@@ -97,12 +97,13 @@ async function sendResult() {
     raw: true,
     order: [['record.rate', 'DESC']],
   })
+  let id = ''
   // @ts-ignore
   client.settings.get('guild').map(async (guild: any) => {
     if (fs.existsSync('today.png')) {
       fs.unlinkSync('today.png')
     }
-    let id = ''
+
     await nodeHtmlToImage({
       output: './today.png',
       html:
@@ -204,9 +205,9 @@ async function sendResult() {
       ).slice(-2)}/${('0' + now.getDate()).slice(-2)})`,
       files: [file],
     })
-    const idTag: any = await Tags.findOne({ where: { id: id } })
-    idTag.increment('win')
   })
+  const idTag: any = await Tags.findOne({ where: { id: id } })
+  idTag.increment('win')
 }
 
 client.on('messageCreate', async (message: Message) => {
@@ -244,7 +245,7 @@ client.on('messageCreate', async (message: Message) => {
         const rate = Math.round(6000 / (newTimeDiff + 1.98))
         const record: any = idTag.get('record')
         const data = {
-          date: createdAt.slice(0, -3),
+          date: createdAt.slice(0, -4),
           rate: rate,
         }
         record.push(data)
@@ -277,7 +278,7 @@ client.on('messageCreate', async (message: Message) => {
 
         tag.increment('part')
         const newData = {
-          date: createdAt.slice(0, -3),
+          date: createdAt.slice(0, -4),
           rate: rate,
         }
         Tags.update(
