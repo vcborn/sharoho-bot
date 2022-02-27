@@ -89,7 +89,7 @@ client.once('ready', async () => {
       })
     })
   })
-  cron.schedule('* * * * *', async () => {
+  cron.schedule('3 * * * *', async () => {
     // @ts-ignore
     client.settings.get('guild').map(async (guild: any) => {
       if (fs.existsSync('today.png')) {
