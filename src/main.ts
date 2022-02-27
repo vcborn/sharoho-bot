@@ -454,7 +454,7 @@ client.on('messageCreate', async (message: Message) => {
     // @ts-ignore
     if (client.settings.has('guild')) {
       // @ts-ignore
-      if (client.settings.has('guild', message.guild?.id)) {
+      if (client.settings.includes('guild', message.guild?.id)) {
         // @ts-ignore
         client.settings.remove('guild', message.guild?.id)
       }
