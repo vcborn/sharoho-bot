@@ -454,6 +454,11 @@ client.on('messageCreate', async (message: Message) => {
     // @ts-ignore
     if (client.settings.has('guild')) {
       // @ts-ignore
+      if (client.settings.has('guild', message.guild?.id)) {
+        // @ts-ignore
+        client.settings.remove('guild', message.guild?.id)
+      }
+      // @ts-ignore
       client.settings.push('guild', { [message.guild?.id]: message.channelId })
       message.reply('リザルトチャンネルを設定しました。')
     } else {
@@ -461,6 +466,47 @@ client.on('messageCreate', async (message: Message) => {
       client.settings.set('guild', [{ [message.guild?.id]: message.channelId }])
       message.reply('リザルトチャンネルを設定しました。')
     }
+  }
+  if (message.content.startsWith('&help')) {
+    message.reply({
+      embeds: [
+        {
+          title: 'ヘルプ',
+          description: 'しゃろほーbotの使い方',
+          color: 0x466387,
+          fields: [
+            {
+              name: 'ランク',
+              value: 'あなたのしゃろほーランクを表示',
+            },
+            {
+              name: '&set',
+              value: 'リザルトを送信するチャンネルを設定',
+            },
+            {
+              name: '&help',
+              value: 'ヘルプ',
+            },
+            {
+              name: '&about',
+              value: 'このbotについて',
+            },
+          ],
+        },
+      ],
+    })
+  }
+  if (message.content.startsWith('&about')) {
+    message.reply({
+      embeds: [
+        {
+          title: 'このbotについて',
+          description:
+            'しゃろほーbotは、Discord上でしゃろほーするためのbotです。\n\n製作者：wamo\nリポジトリ：[Github](https://github.com/vcborn/sharoho-bot)',
+          color: 0x466387,
+        },
+      ],
+    })
   }
 })
 
