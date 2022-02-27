@@ -95,6 +95,7 @@ client.once('ready', async () => {
       if (fs.existsSync('today.png')) {
         fs.unlinkSync('today.png')
       }
+      let id = ''
       await nodeHtmlToImage({
         output: './today.png',
         html:
@@ -130,6 +131,9 @@ client.once('ready', async () => {
       <tbody>` +
           db.map((item: any, index) => {
             let diff = null
+            if (index === 0) {
+              id = item.id
+            }
             if (JSON.parse(item.record).length === 1) {
               diff = 'NEW'
             } else {
@@ -182,6 +186,8 @@ client.once('ready', async () => {
       </body>
       </html>`,
       })
+      const idTag: any = await Tags.findOne({ where: { id: id } })
+      idTag.increment('win')
       const file = new MessageAttachment('./today.png')
       // @ts-ignore
       client.channels.cache.get(Object.values(guild)[0]).send({
@@ -248,6 +254,7 @@ client.on('messageCreate', async (message: Message) => {
         const tag: any = await Tags.create({
           id: id,
           name: author,
+          win: 0,
           best: createdAt.slice(10),
           rating: 0,
           last: createdAt,
