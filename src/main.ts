@@ -74,132 +74,140 @@ client.once('ready', async () => {
   }
   console.log(client.user?.tag)
   client.user?.setActivity('&set | しゃろしゃろ')
+  cron.schedule('58 23 * * *', async () => {
+    // @ts-ignore
+    client.settings.get('guild').map(async (guild: any) => {
+      // @ts-ignore
+      const channel = Object.values(guild)[1]
+      // @ts-ignore
+      client.channels.cache.get(channel).send({
+        content: 'しゃろしゃろ',
+      })
+    })
+  })
+  cron.schedule('3 0 * * *', () => {
+    sendResult()
+  })
+})
+
+async function sendResult () {
   const now = new Date()
   console.log(now)
   const db = await Tags.findAll({
     raw: true,
     order: [['record.rate', 'DESC']],
   })
-  cron.schedule('58 23 * * *', async () => {
-    // @ts-ignore
-    client.settings.get('guild').map(async (guild: any) => {
-      // @ts-ignore
-      client.channels.cache.get(Object.values(guild)[0]).send({
-        content: 'しゃろしゃろ',
-      })
-    })
-  })
-  cron.schedule('3 0 * * *', async () => {
-    // @ts-ignore
-    client.settings.get('guild').map(async (guild: any) => {
-      if (fs.existsSync('today.png')) {
-        fs.unlinkSync('today.png')
-      }
-      let id = ''
-      await nodeHtmlToImage({
-        output: './today.png',
-        html:
-          `<html>
-      <body style="text-align:center;font-family:sans-serif;padding-top:5rem;padding-bottom:2.5rem;">
-      <style>
-      th, td {
-      border:1px solid black;
-      padding-top:4px;
-      padding-bottom:4px;
-      }
-      th:first-child {
-      border:none
-      }
-      tr td {
-      padding-left:4px;
-      }
-      </style>
-      <h2>SHAROHO RESULT (${now.getFullYear()}/${(
-            '0' +
-            (now.getMonth() + 1)
-          ).slice(-2)}/${('0' + now.getDate()).slice(-2)})</h2>
-      <table style="margin-left:auto;margin-right:auto;width:80%;border-collapse:collapse">
-      <thead>
-        <tr>
-          <th></th>
-          <th>Name</th>
-          <th>Record</th>
-          <th>Rating</th>
-          <th>Change</th>
-        </tr>
-      </thead>
-      <tbody>` +
-          db.map((item: any, index) => {
-            let diff = null
-            if (index === 0) {
-              id = item.id
-            }
-            if (JSON.parse(item.record).length === 1) {
-              diff = 'NEW'
-            } else {
-              if (
-                Math.sign(
-                  item.rating - JSON.parse(item.record).slice(-1)[0].rate,
-                ) === 1
-              ) {
-                diff =
-                  '+' +
-                  (item.rating - JSON.parse(item.record).slice(-1)[0].rate)
-                    .toString
-              } else {
-                diff = item.rating - JSON.parse(item.record).slice(-1)[0].rate
-              }
-            }
-            const rec = item.last.substring(11)
-            let bgcolor = '#fff'
-            if (item.rate >= 2800) {
-              bgcolor = 'rgba(255,0,0,0.7)'
-            } else if (item.rate >= 2400) {
-              bgcolor = 'rgba(255,128,5,0.7)'
-            } else if (item.rate >= 2000) {
-              bgcolor = 'rgba(192,192,0,0.7)'
-            } else if (item.rate >= 1600) {
-              bgcolor = 'rgba(0,0,255,0.7)'
-            } else if (item.rate >= 1200) {
-              bgcolor = 'rgba(192,192,0,0.7)'
-            } else if (item.rate >= 800) {
-              bgcolor = 'rgba(0,128,0,0.7)'
-            } else if (item.rate >= 400) {
-              bgcolor = 'rgba(128,64,0,0.7)'
-            } else {
-              bgcolor = 'rgba(128,128,128,0.7)'
-            }
-            return (
-              "<tr style='background-color:" +
-              bgcolor +
-              `'>
-          <td style='background-color:#fff'>${index + 1}</td>
-          <td>${item.name}</td>
-          <td>${rec}</td>
-          <td>${item.rating}</td>
-          <td>${diff}</td>
-          </tr>`
-            )
-          }) +
-          `</tbody>
-      </table>
-      </body>
-      </html>`,
-      })
-      const idTag: any = await Tags.findOne({ where: { id: id } })
-      idTag.increment('win')
-      const file = new MessageAttachment('./today.png')
-      // @ts-ignore
-      client.channels.cache.get(Object.values(guild)[0]).send({
-        content: `SHAROHO RESULT (${now.getFullYear()}/${(
+  // @ts-ignore
+  client.settings.get('guild').map(async (guild: any) => {
+    if (fs.existsSync('today.png')) {
+      fs.unlinkSync('today.png')
+    }
+    let id = ''
+    await nodeHtmlToImage({
+      output: './today.png',
+      html:
+        `<html>
+    <body style="text-align:center;font-family:sans-serif;padding-top:5rem;padding-bottom:2.5rem;">
+    <style>
+    th, td {
+    border:1px solid black;
+    padding-top:4px;
+    padding-bottom:4px;
+    }
+    th:first-child {
+    border:none
+    }
+    tr td {
+    padding-left:4px;
+    }
+    </style>
+    <h2>SHAROHO RESULT (${now.getFullYear()}/${(
           '0' +
           (now.getMonth() + 1)
-        ).slice(-2)}/${('0' + now.getDate()).slice(-2)})`,
-        files: [file],
-      })
+        ).slice(-2)}/${('0' + now.getDate()).slice(-2)})</h2>
+    <table style="margin-left:auto;margin-right:auto;width:80%;border-collapse:collapse">
+    <thead>
+      <tr>
+        <th></th>
+        <th>Name</th>
+        <th>Record</th>
+        <th>Rating</th>
+        <th>Change</th>
+      </tr>
+    </thead>
+    <tbody>` +
+        db.map((item: any, index) => {
+          let diff = null
+          if (index === 0) {
+            id = item.id
+          }
+          if (JSON.parse(item.record).length === 1) {
+            diff = 'NEW'
+          } else {
+            if (
+              Math.sign(
+                item.rating - JSON.parse(item.record).slice(-1)[0].rate,
+              ) === 1
+            ) {
+              diff =
+                '+' +
+                (item.rating - JSON.parse(item.record).slice(-1)[0].rate)
+                  .toString
+            } else {
+              diff = item.rating - JSON.parse(item.record).slice(-1)[0].rate
+            }
+          }
+          const rec = item.last.substring(11)
+          let bgcolor = '#fff'
+          if (item.rating >= 2800) {
+            bgcolor = 'rgba(255,0,0,0.7)'
+          } else if (item.rating >= 2400) {
+            bgcolor = 'rgba(255,128,5,0.7)'
+          } else if (item.rating >= 2000) {
+            bgcolor = 'rgba(192,192,0,0.7)'
+          } else if (item.rating >= 1600) {
+            bgcolor = 'rgba(0,0,255,0.7)'
+          } else if (item.rating >= 1200) {
+            bgcolor = 'rgba(192,192,0,0.7)'
+          } else if (item.rating >= 800) {
+            bgcolor = 'rgba(0,128,0,0.7)'
+          } else if (item.rating >= 400) {
+            bgcolor = 'rgba(128,64,0,0.7)'
+          } else {
+            bgcolor = 'rgba(128,128,128,0.7)'
+          }
+          return (
+            "<tr style='background-color:" +
+            bgcolor +
+            `'>
+        <td style='background-color:#fff'>${index + 1}</td>
+        <td>${item.name}</td>
+        <td>${rec}</td>
+        <td>${item.rating}</td>
+        <td>${diff}</td>
+        </tr>`
+          )
+        }) +
+        `</tbody>
+    </table>
+    </body>
+    </html>`,
     })
+    const file = new MessageAttachment('./today.png')
+    // @ts-ignore
+    const channel = Object.values(guild)[1]
+    // @ts-ignore
+    client.channels.cache.get(channel).send({
+      content: `SHAROHO RESULT (${now.getFullYear()}/${(
+        '0' +
+        (now.getMonth() + 1)
+      ).slice(-2)}/${('0' + now.getDate()).slice(-2)})`,
+      files: [file],
+    })
+    const idTag: any = await Tags.findOne({ where: { id: id } })
+    idTag.increment('win')
   })
-})
+}
 
 client.on('messageCreate', async (message: Message) => {
   const now = new Date()
@@ -525,6 +533,9 @@ client.on('messageCreate', async (message: Message) => {
         },
       ],
     })
+  }
+  if (message.content.startsWith('&res')) {
+    sendResult()
   }
 })
 
