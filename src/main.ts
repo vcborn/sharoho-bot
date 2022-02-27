@@ -357,6 +357,7 @@ client.on('messageCreate', async (message: Message) => {
               text: `しゃろほー${rank} ${author}`,
               align: 'right',
               anchor: 'start',
+              dx: 80,
             },
             mark: {
               type: 'rect',
@@ -488,9 +489,9 @@ client.on('messageCreate', async (message: Message) => {
             message.reply({
               content:
                 idTag.get('name') +
-                ' しゃろほー' +
+                ' (しゃろほー' +
                 rank +
-                '\nレーティング：' +
+                ')\nレーティング：' +
                 idTag.get('rating') +
                 '\n優勝 / 参加回数：' +
                 idTag.get('win') +
