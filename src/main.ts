@@ -353,6 +353,10 @@ client.on('messageCreate', async (message: Message) => {
         ],
         layer: [
           {
+            title: {
+              text: `しゃろほー${rank} ${author}`,
+              align: 'left',
+            },
             mark: {
               type: 'rect',
               opacity: 0.2,
@@ -441,10 +445,6 @@ client.on('messageCreate', async (message: Message) => {
             },
           },
           {
-            title: {
-              text: `しゃろほー${rank} ${author}`,
-              align: 'left',
-            },
             mark: {
               type: 'line',
               point: true,
@@ -487,6 +487,7 @@ client.on('messageCreate', async (message: Message) => {
             message.reply({
               content:
                 idTag.get('name') +
+                rank +
                 '\nレーティング：' +
                 idTag.get('rating') +
                 '\n優勝 / 参加回数：' +
