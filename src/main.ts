@@ -340,8 +340,8 @@ client.on('messageCreate', async (message: Message) => {
         padding: 20,
         config: {
           axis: {
-            labelFont: 'sans-serif',
-            titleFont: 'sans-serif',
+            labelFont: 'Noto Sans JP,sans-serif',
+            titleFont: 'Noto Sans JP,sans-serif',
           },
         },
         transform: [
@@ -356,6 +356,7 @@ client.on('messageCreate', async (message: Message) => {
             title: {
               text: `しゃろほー${rank} ${author}`,
               align: 'left',
+              font: 'Noto Sans JP,sans-serif',
               anchor: 'start',
               dx: 40,
             },
