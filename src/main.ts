@@ -8,6 +8,7 @@ import { TopLevelSpec, compile } from 'vega-lite'
 import { View, parse } from 'vega'
 import fs from 'fs'
 import { from } from 'svg-to-img'
+import Enmap from 'enmap'
 
 dotenv.config()
 
@@ -55,19 +56,24 @@ const Tags = sequelize.define('tags', {
 
 Tags.sync()
 
-const defaultChannel = ''
-
 const client = new Client({
   intents: ['GUILDS', 'GUILD_MEMBERS', 'GUILD_MESSAGES'],
+})
+
+// @ts-ignore
+client.settings = new Enmap({
+  name: 'settings',
+  fetchAll: false,
+  autoFetch: true,
+  cloneLevel: 'deep',
 })
 
 client.once('ready', async () => {
   if (fs.existsSync('dest.png')) {
     fs.unlinkSync('dest.png')
   }
-  console.log('Now this bot is ready!')
   console.log(client.user?.tag)
-  client.user?.setActivity('しゃろしゃろ')
+  client.user?.setActivity('&set | しゃろしゃろ')
   const now = new Date()
   console.log(now)
   const db = await Tags.findAll({
@@ -76,18 +82,23 @@ client.once('ready', async () => {
   })
   cron.schedule('58 23 * * *', async () => {
     // @ts-ignore
-    client.channels.cache.get(defaultChannel).send({
-      content: 'しゃろしゃろ',
+    client.settings.get('guild').map(async (guild: any) => {
+      // @ts-ignore
+      client.channels.cache.get(Object.values(guild)[0]).send({
+        content: 'しゃろしゃろ',
+      })
     })
   })
-  cron.schedule('3 0 * * *', async () => {
-    if (fs.existsSync('today.png')) {
-      fs.unlinkSync('today.png')
-    }
-    await nodeHtmlToImage({
-      output: './today.png',
-      html:
-        `<html>
+  cron.schedule('* * * * *', async () => {
+    // @ts-ignore
+    client.settings.get('guild').map(async (guild: any) => {
+      if (fs.existsSync('today.png')) {
+        fs.unlinkSync('today.png')
+      }
+      await nodeHtmlToImage({
+        output: './today.png',
+        html:
+          `<html>
       <body style="text-align:center;font-family:sans-serif;padding-top:5rem;padding-bottom:2.5rem;">
       <style>
       th, td {
@@ -103,9 +114,9 @@ client.once('ready', async () => {
       }
       </style>
       <h2>SHAROHO RESULT (${now.getFullYear()}/${(
-          '0' +
-          (now.getMonth() + 1)
-        ).slice(-2)}/${('0' + now.getDate()).slice(-2)})</h2>
+            '0' +
+            (now.getMonth() + 1)
+          ).slice(-2)}/${('0' + now.getDate()).slice(-2)})</h2>
       <table style="margin-left:auto;margin-right:auto;width:80%;border-collapse:collapse">
       <thead>
         <tr>
@@ -117,68 +128,69 @@ client.once('ready', async () => {
         </tr>
       </thead>
       <tbody>` +
-        db.map((item: any, index) => {
-          let diff = null
-          if (JSON.parse(item.record).length === 1) {
-            diff = 'NEW'
-          } else {
-            if (
-              Math.sign(
-                item.rating - JSON.parse(item.record).slice(-1)[0].rate,
-              ) === 1
-            ) {
-              diff =
-                '+' +
-                (item.rating - JSON.parse(item.record).slice(-1)[0].rate)
-                  .toString
+          db.map((item: any, index) => {
+            let diff = null
+            if (JSON.parse(item.record).length === 1) {
+              diff = 'NEW'
             } else {
-              diff = item.rating - JSON.parse(item.record).slice(-1)[0].rate
+              if (
+                Math.sign(
+                  item.rating - JSON.parse(item.record).slice(-1)[0].rate,
+                ) === 1
+              ) {
+                diff =
+                  '+' +
+                  (item.rating - JSON.parse(item.record).slice(-1)[0].rate)
+                    .toString
+              } else {
+                diff = item.rating - JSON.parse(item.record).slice(-1)[0].rate
+              }
             }
-          }
-          const rec = item.last.substring(11)
-          let bgcolor = '#fff'
-          if (item.rate >= 2800) {
-            bgcolor = 'rgba(255,0,0,0.7)'
-          } else if (item.rate >= 2400) {
-            bgcolor = 'rgba(255,128,5,0.7)'
-          } else if (item.rate >= 2000) {
-            bgcolor = 'rgba(192,192,0,0.7)'
-          } else if (item.rate >= 1600) {
-            bgcolor = 'rgba(0,0,255,0.7)'
-          } else if (item.rate >= 1200) {
-            bgcolor = 'rgba(192,192,0,0.7)'
-          } else if (item.rate >= 800) {
-            bgcolor = 'rgba(0,128,0,0.7)'
-          } else if (item.rate >= 400) {
-            bgcolor = 'rgba(128,64,0,0.7)'
-          } else {
-            bgcolor = 'rgba(128,128,128,0.7)'
-          }
-          return (
-            "<tr style='background-color:" +
-            bgcolor +
-            `'>
+            const rec = item.last.substring(11)
+            let bgcolor = '#fff'
+            if (item.rate >= 2800) {
+              bgcolor = 'rgba(255,0,0,0.7)'
+            } else if (item.rate >= 2400) {
+              bgcolor = 'rgba(255,128,5,0.7)'
+            } else if (item.rate >= 2000) {
+              bgcolor = 'rgba(192,192,0,0.7)'
+            } else if (item.rate >= 1600) {
+              bgcolor = 'rgba(0,0,255,0.7)'
+            } else if (item.rate >= 1200) {
+              bgcolor = 'rgba(192,192,0,0.7)'
+            } else if (item.rate >= 800) {
+              bgcolor = 'rgba(0,128,0,0.7)'
+            } else if (item.rate >= 400) {
+              bgcolor = 'rgba(128,64,0,0.7)'
+            } else {
+              bgcolor = 'rgba(128,128,128,0.7)'
+            }
+            return (
+              "<tr style='background-color:" +
+              bgcolor +
+              `'>
           <td style='background-color:#fff'>${index + 1}</td>
           <td>${item.name}</td>
           <td>${rec}</td>
           <td>${item.rating}</td>
           <td>${diff}</td>
           </tr>`
-          )
-        }) +
-        `</tbody>
+            )
+          }) +
+          `</tbody>
       </table>
       </body>
       </html>`,
-    })
-    const file = new MessageAttachment('./today.png')
-    // @ts-ignore
-    client.channels.cache.get(defaultChannel).send({
-      content: `SHAROHO RESULT (${now.getFullYear()}/${(
-        '0' +
-        (now.getMonth() + 1)
-      ).slice(-2)}/${('0' + now.getDate()).slice(-2)})`,
-      files: [file],
+      })
+      const file = new MessageAttachment('./today.png')
+      // @ts-ignore
+      client.channels.cache.get(Object.values(guild)[0]).send({
+        content: `SHAROHO RESULT (${now.getFullYear()}/${(
+          '0' +
+          (now.getMonth() + 1)
+        ).slice(-2)}/${('0' + now.getDate()).slice(-2)})`,
+        files: [file],
+      })
     })
   })
 })
@@ -192,7 +204,6 @@ client.on('messageCreate', async (message: Message) => {
       now.getMinutes() === 59 ||
       now.getMinutes() === 0
     ) {
-      console.log('new message')
       const author = message.author.username
       const id = message.author.id
       // eslint-disable-next-line new-cap
@@ -438,6 +449,18 @@ client.on('messageCreate', async (message: Message) => {
       })
     } else {
       message.reply('登録されていません。')
+    }
+  }
+  if (message.content.startsWith('&set')) {
+    // @ts-ignore
+    if (client.settings.has('guild')) {
+      // @ts-ignore
+      client.settings.push('guild', { [message.guild?.id]: message.channelId })
+      message.reply('リザルトチャンネルを設定しました。')
+    } else {
+      // @ts-ignore
+      client.settings.set('guild', [{ [message.guild?.id]: message.channelId }])
+      message.reply('リザルトチャンネルを設定しました。')
     }
   }
 })
