@@ -236,7 +236,7 @@ client.on('messageCreate', async (message: Message) => {
         record.push(data)
         idTag.increment('part')
         await Tags.update(
-          { last: createdAt, record: [record], rating: rate },
+          { name: author, last: createdAt, record: [record], rating: rate },
           { where: { id: id } },
         )
       } else {
