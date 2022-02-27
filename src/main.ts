@@ -294,9 +294,45 @@ client.on('messageCreate', async (message: Message) => {
     message.content.startsWith('ランク' || 'らんく' || 'rank' || 'Rank')
   ) {
     const id = message.author.id
+    const author = message.author.username
     const idTag = await Tags.findOne({ where: { id: id } })
     if (idTag) {
       const data: any = idTag.get('record')
+      const rate: any = idTag.get('rating')
+      let rank = ''
+      if (rate >= 3000) {
+        rank = '六段'
+      } else if (rate >= 2800) {
+        rank = '五段'
+      } else if (rate >= 2600) {
+        rank = '四段'
+      } else if (rate >= 2400) {
+        rank = '三段'
+      } else if (rate >= 2200) {
+        rank = '二段'
+      } else if (rate >= 2000) {
+        rank = '初段'
+      } else if (rate >= 1800) {
+        rank = '一級'
+      } else if (rate >= 1600) {
+        rank = '二級'
+      } else if (rate >= 1400) {
+        rank = '三級'
+      } else if (rate >= 1200) {
+        rank = '四級'
+      } else if (rate >= 1000) {
+        rank = '五級'
+      } else if (rate >= 800) {
+        rank = '六級'
+      } else if (rate >= 600) {
+        rank = '七級'
+      } else if (rate >= 400) {
+        rank = '八級'
+      } else if (rate >= 200) {
+        rank = '九級'
+      } else {
+        rank = '十級'
+      }
       const vegaLiteSpec: TopLevelSpec = {
         $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
         width: 640,
@@ -405,6 +441,10 @@ client.on('messageCreate', async (message: Message) => {
             },
           },
           {
+            title: {
+              text: `しゃろほー${rank} ${author}`,
+              align: 'left',
+            },
             mark: {
               type: 'line',
               point: true,
