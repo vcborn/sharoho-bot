@@ -1,6 +1,6 @@
 import { Message, Client, MessageAttachment } from 'discord.js'
 import dotenv from 'dotenv'
-import { Sequelize, STRING, INTEGER, JSON } from 'sequelize'
+import { Sequelize, STRING, INTEGER, JSON as SJSON } from 'sequelize'
 import { timestamp } from 'timestamp-conv'
 import nodeHtmlToImage from 'node-html-to-image'
 import cron from 'node-cron'
@@ -8,7 +8,6 @@ import { TopLevelSpec, compile } from 'vega-lite'
 import { View, parse } from 'vega'
 import fs from 'fs'
 import { from } from 'svg-to-img'
-import { arange, multiply, sum } from 'numjs'
 
 dotenv.config()
 
@@ -46,7 +45,7 @@ const Tags = sequelize.define('tags', {
   },
   // 過去記録
   record: {
-    type: JSON,
+    type: SJSON,
   },
   // 最高記録（hh:mm:ss.ms）
   best: STRING,
@@ -55,20 +54,6 @@ const Tags = sequelize.define('tags', {
 })
 
 Tags.sync()
-
-export function zip<S1, S2> (
-  firstCollection: Array<S1>,
-  lastCollection: Array<S2>,
-): Array<[S1, S2]> {
-  const length = Math.min(firstCollection.length, lastCollection.length)
-  const zipped: Array<[S1, S2]> = []
-
-  for (let index = 0; index < length; index++) {
-    zipped.push([firstCollection[index], lastCollection[index]])
-  }
-
-  return zipped
-}
 
 const client = new Client({
   intents: ['GUILDS', 'GUILD_MEMBERS', 'GUILD_MESSAGES'],
@@ -87,12 +72,15 @@ client.once('ready', async () => {
     raw: true,
     order: [['record.rate', 'DESC']],
   })
-  cron.schedule('4 0 * * *', () => {
-    nodeHtmlToImage({
-      output: './image.png',
+  cron.schedule('* * * * *', async () => {
+    if (fs.existsSync('today.png')) {
+      fs.unlinkSync('today.png')
+    }
+    await nodeHtmlToImage({
+      output: './today.png',
       html:
         `<html>
-      <body style="text-align:center;font-family:sans-serif">
+      <body style="text-align:center;font-family:sans-serif;padding-top:5rem;padding-bottom:2.5rem;">
       <style>
       th, td {
       border:1px solid black;
@@ -106,35 +94,83 @@ client.once('ready', async () => {
       padding-left:4px;
       }
       </style>
-      <h2>SHAROHO RESULT (${now.getFullYear()}/${now.getMonth()}/${now.getDay()})</h2>
+      <h2>SHAROHO RESULT (${now.getFullYear()}/${(
+          '0' +
+          (now.getMonth() + 1)
+        ).slice(-2)}/${('0' + now.getDate()).slice(-2)})</h2>
       <table style="margin-left:auto;margin-right:auto;width:80%;border-collapse:collapse">
       <thead>
         <tr>
           <th></th>
           <th>Name</th>
           <th>Record</th>
-          <th>Perf.</th>
           <th>Rating</th>
           <th>Change</th>
         </tr>
       </thead>
       <tbody>` +
         db.map((item: any, index) => {
-          const diff =
-            Math.sign(item.rating - item.record.slice(-1).rate) === 1
-              ? '+' + (item.rating - item.record.slice(-1).rate).toString
-              : item.rating - item.record.slice(-1).rate
-          return `<tr>
-          <td>${index}</td>
+          let diff = null
+          if (JSON.parse(item.record).length === 1) {
+            diff = 'NEW'
+          } else {
+            if (
+              Math.sign(
+                item.rating - JSON.parse(item.record).slice(-1)[0].rate,
+              ) === 1
+            ) {
+              diff =
+                '+' +
+                (item.rating - JSON.parse(item.record).slice(-1)[0].rate)
+                  .toString
+            } else {
+              diff = item.rating - JSON.parse(item.record).slice(-1)[0].rate
+            }
+          }
+          const rec = item.last.substring(11)
+          let bgcolor = '#fff'
+          if (item.rate >= 2800) {
+            bgcolor = 'rgba(255,0,0,0.7)'
+          } else if (item.rate >= 2400) {
+            bgcolor = 'rgba(255,128,5,0.7)'
+          } else if (item.rate >= 2000) {
+            bgcolor = 'rgba(192,192,0,0.7)'
+          } else if (item.rate >= 1600) {
+            bgcolor = 'rgba(0,0,255,0.7)'
+          } else if (item.rate >= 1200) {
+            bgcolor = 'rgba(192,192,0,0.7)'
+          } else if (item.rate >= 800) {
+            bgcolor = 'rgba(0,128,0,0.7)'
+          } else if (item.rate >= 400) {
+            bgcolor = 'rgba(128,64,0,0.7)'
+          } else {
+            bgcolor = 'rgba(128,128,128,0.7)'
+          }
+          return (
+            "<tr style='background-color:" +
+            bgcolor +
+            `'>
+          <td style='background-color:#fff'>${index + 1}</td>
           <td>${item.name}</td>
-          <td></td>
+          <td>${rec}</td>
           <td>${item.rating}</td>
-          <td>${diff}</td>`
+          <td>${diff}</td>
+          </tr>`
+          )
         }) +
         `</tbody>
       </table>
       </body>
       </html>`,
+    })
+    const file = new MessageAttachment('./today.png')
+    // @ts-ignore
+    client.channels.cache.get('709253882223788105').send({
+      content: `SHAROHO RESULT (${now.getFullYear()}/${(
+        '0' +
+        (now.getMonth() + 1)
+      ).slice(-2)}/${('0' + now.getDate()).slice(-2)})`,
+      files: [file],
     })
   })
 })
@@ -144,8 +180,8 @@ client.on('messageCreate', async (message: Message) => {
   if (message.author.bot) return
   if (message.content.startsWith('しゃろほー')) {
     if (
-      ((now.getHours() === 23 || now.getHours() === 0) &&
-        now.getMinutes() === 59) ||
+      // ((now.getHours() === 23 || now.getHours() === 0) &&
+      now.getMinutes() === 59 ||
       now.getMinutes() === 0
     ) {
       console.log('new message')
@@ -156,7 +192,7 @@ client.on('messageCreate', async (message: Message) => {
       // YYYY-MM-DD hh:mm:ss.ms
       const createdAt = `${date.getYear()}/${date.getMonth()}/${date.getDay()} ${date.getHour()}:${date.getMinute()}:${date.getSeconds()}.${date.getMilliseconds()}`
       const idTag: any = await Tags.findOne({ where: { id: id } })
-      const best = createdAt.substring(10)
+      const best = createdAt.substring(11)
       if (idTag) {
         const newTime = new Date(createdAt)
         // @ts-ignore
@@ -172,58 +208,47 @@ client.on('messageCreate', async (message: Message) => {
         if (lastTimeDiff > newTimeDiff) {
           await Tags.update({ best: best }, { where: { id: id } })
         }
-        let weight: any = Array(idTag.get('part')).fill(0.9)
-        weight = arange(0, idTag.get('part'), 1).tolist().reverse()
-        weight = weight.map(function (a: any) {
-          return a ** a
-        })
 
-        const perfHist: number[] = []
-        // eslint-disable-next-line array-callback-return
-        idTag.get('record').map((item: any) => {
-          perfHist.push(item.perf)
-        })
-        const aperf: any = multiply(perfHist, weight)
-          .tolist()
-          .map((x: any) => x / sum(weight))
-
+        const rate = Math.round(6000 / (newTimeDiff + 1.98))
         const record: any = idTag.get('record')
         const data = {
-          date: createdAt.substring(0, -3),
-          aperf: aperf,
-          rate: aperf,
+          date: createdAt.slice(0, -3),
+          rate: rate,
         }
         record.push(data)
         idTag.increment('part')
         await Tags.update(
-          { last: createdAt, record: [record] },
+          { last: createdAt, record: [record], rating: rate },
           { where: { id: id } },
         )
       } else {
         const data = {
           date: createdAt,
-          aperf: 0,
-          perf: [],
           rate: 0,
           rank: 0.5,
         }
         const tag: any = await Tags.create({
           id: id,
           name: author,
-          best: createdAt.substring(10),
+          best: createdAt.slice(10),
+          rating: 0,
           last: createdAt,
           record: [data],
         })
-        const aperf = 1600
+        const newTime = new Date(createdAt)
+        const newTimeDiff =
+          newTime.getMinutes() === 59
+            ? 60 - newTime.getSeconds()
+            : newTime.getSeconds()
+        const rate = Math.round(6200 / (newTimeDiff + 2.1))
 
         tag.increment('part')
         const newData = {
-          date: createdAt.substring(0, -3),
-          aperf: aperf,
-          rate: aperf,
+          date: createdAt.slice(0, -3),
+          rate: rate,
         }
         Tags.update(
-          { last: createdAt, record: [newData] },
+          { last: createdAt, record: [newData], rating: rate },
           { where: { id: id } },
         )
       }

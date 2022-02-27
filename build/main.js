@@ -12,7 +12,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.zip = void 0;
 const discord_js_1 = require("discord.js");
 const dotenv_1 = __importDefault(require("dotenv"));
 const sequelize_1 = require("sequelize");
@@ -23,7 +22,6 @@ const vega_lite_1 = require("vega-lite");
 const vega_1 = require("vega");
 const fs_1 = __importDefault(require("fs"));
 const svg_to_img_1 = require("svg-to-img");
-const numjs_1 = require("numjs");
 dotenv_1.default.config();
 const sequelize = new sequelize_1.Sequelize('database', 'user', 'password', {
     host: 'localhost',
@@ -66,16 +64,6 @@ const Tags = sequelize.define('tags', {
     last: sequelize_1.STRING,
 });
 Tags.sync();
-const test = 25;
-function zip(firstCollection, lastCollection) {
-    const length = Math.min(firstCollection.length, lastCollection.length);
-    const zipped = [];
-    for (let index = 0; index < length; index++) {
-        zipped.push([firstCollection[index], lastCollection[index]]);
-    }
-    return zipped;
-}
-exports.zip = zip;
 const client = new discord_js_1.Client({
     intents: ['GUILDS', 'GUILD_MEMBERS', 'GUILD_MESSAGES'],
 });
@@ -93,11 +81,14 @@ client.once('ready', () => __awaiter(void 0, void 0, void 0, function* () {
         raw: true,
         order: [['record.rate', 'DESC']],
     });
-    node_cron_1.default.schedule('4 0 * * *', () => {
-        (0, node_html_to_image_1.default)({
-            output: './image.png',
+    node_cron_1.default.schedule('* * * * *', () => __awaiter(void 0, void 0, void 0, function* () {
+        if (fs_1.default.existsSync('today.png')) {
+            fs_1.default.unlinkSync('today.png');
+        }
+        yield (0, node_html_to_image_1.default)({
+            output: './today.png',
             html: `<html>
-      <body style="text-align:center;font-family:sans-serif">
+      <body style="text-align:center;font-family:sans-serif;padding-top:5rem;padding-bottom:2.5rem;">
       <style>
       th, td {
       border:1px solid black;
@@ -111,36 +102,84 @@ client.once('ready', () => __awaiter(void 0, void 0, void 0, function* () {
       padding-left:4px;
       }
       </style>
-      <h2>SHAROHO RESULT (${now.getFullYear()}/${now.getMonth()}/${now.getDay()})</h2>
+      <h2>SHAROHO RESULT (${now.getFullYear()}/${('0' +
+                (now.getMonth() + 1)).slice(-2)}/${('0' + now.getDate()).slice(-2)})</h2>
       <table style="margin-left:auto;margin-right:auto;width:80%;border-collapse:collapse">
       <thead>
         <tr>
           <th></th>
           <th>Name</th>
           <th>Record</th>
-          <th>Perf.</th>
           <th>Rating</th>
           <th>Change</th>
         </tr>
       </thead>
       <tbody>` +
                 db.map((item, index) => {
-                    const diff = Math.sign(item.rating - item.record.slice(-1).rate) === 1
-                        ? '+' + (item.rating - item.record.slice(-1).rate).toString
-                        : item.rating - item.record.slice(-1).rate;
-                    return `<tr>
-          <td>${index}</td>
+                    let diff = null;
+                    if (JSON.parse(item.record).length === 1) {
+                        diff = 'NEW';
+                    }
+                    else {
+                        if (Math.sign(item.rating - JSON.parse(item.record).slice(-1)[0].rate) === 1) {
+                            diff =
+                                '+' +
+                                    (item.rating - JSON.parse(item.record).slice(-1)[0].rate)
+                                        .toString;
+                        }
+                        else {
+                            diff = item.rating - JSON.parse(item.record).slice(-1)[0].rate;
+                        }
+                    }
+                    const rec = item.last.substring(11);
+                    let bgcolor = '#fff';
+                    if (item.rate >= 2800) {
+                        bgcolor = 'rgba(255,0,0,0.5)';
+                    }
+                    else if (item.rate >= 2400) {
+                        bgcolor = 'rgba(255,128,5,0.5)';
+                    }
+                    else if (item.rate >= 2000) {
+                        bgcolor = 'rgba(192,192,0,0.5)';
+                    }
+                    else if (item.rate >= 1600) {
+                        bgcolor = 'rgba(0,0,255,0.5)';
+                    }
+                    else if (item.rate >= 1200) {
+                        bgcolor = 'rgba(192,192,0,0.5)';
+                    }
+                    else if (item.rate >= 800) {
+                        bgcolor = 'rgba(0,128,0,0.5)';
+                    }
+                    else if (item.rate >= 400) {
+                        bgcolor = 'rgba(128,64,0,0.5)';
+                    }
+                    else {
+                        bgcolor = 'rgba(128,128,128,0.5)';
+                    }
+                    return ("<tr style='background-color:" +
+                        bgcolor +
+                        `'>
+          <td style='background-color:#fff'>${index + 1}</td>
           <td>${item.name}</td>
-          <td></td>
+          <td>${rec}</td>
           <td>${item.rating}</td>
-          <td>${diff}</td>`;
+          <td>${diff}</td>
+          </tr>`);
                 }) +
                 `</tbody>
       </table>
       </body>
       </html>`,
         });
-    });
+        const file = new discord_js_1.MessageAttachment('./today.png');
+        // @ts-ignore
+        client.channels.cache.get('709253882223788105').send({
+            content: `SHAROHO RESULT (${now.getFullYear()}/${('0' +
+                (now.getMonth() + 1)).slice(-2)}/${('0' + now.getDate()).slice(-2)})`,
+            files: [file],
+        });
+    }));
 }));
 client.on('messageCreate', (message) => __awaiter(void 0, void 0, void 0, function* () {
     const now = new Date();
@@ -148,11 +187,9 @@ client.on('messageCreate', (message) => __awaiter(void 0, void 0, void 0, functi
         return;
     if (message.content.startsWith('しゃろほー')) {
         if (
-        // (now.getHours() === 23 || now.getHours() === 0) &&
-        // now.getMinutes() === 59 ||
-        // now.getMinutes() === 0
-        // eslint-disable-next-line no-constant-condition
-        true) {
+        // ((now.getHours() === 23 || now.getHours() === 0) &&
+        now.getMinutes() === 59 ||
+            now.getMinutes() === 0) {
             console.log('new message');
             const author = message.author.username;
             const id = message.author.id;
@@ -161,42 +198,29 @@ client.on('messageCreate', (message) => __awaiter(void 0, void 0, void 0, functi
             // YYYY-MM-DD hh:mm:ss.ms
             const createdAt = `${date.getYear()}/${date.getMonth()}/${date.getDay()} ${date.getHour()}:${date.getMinute()}:${date.getSeconds()}.${date.getMilliseconds()}`;
             const idTag = yield Tags.findOne({ where: { id: id } });
-            const best = createdAt.substring(10);
+            const best = createdAt.substring(11);
             if (idTag) {
                 const newTime = new Date(createdAt);
                 // @ts-ignore
                 const lastTime = new Date(idTag.get('last'));
-                const newTimeDiff = newTime.getMinutes() === test
+                const newTimeDiff = newTime.getMinutes() === 59
                     ? 60 - newTime.getSeconds()
                     : newTime.getSeconds();
-                const lastTimeDiff = lastTime.getMinutes() === test
+                const lastTimeDiff = lastTime.getMinutes() === 59
                     ? 60 - lastTime.getSeconds()
                     : lastTime.getSeconds();
                 if (lastTimeDiff > newTimeDiff) {
                     yield Tags.update({ best: best }, { where: { id: id } });
                 }
-                let weight = Array(idTag.get('part')).fill(0.9);
-                weight = (0, numjs_1.arange)(0, idTag.get('part'), 1).tolist().reverse();
-                weight = weight.map(function (a) {
-                    return a ** a;
-                });
-                const perfHist = [];
-                // eslint-disable-next-line array-callback-return
-                idTag.get('record').map((item) => {
-                    perfHist.push(item.perf);
-                });
-                const aperf = (0, numjs_1.multiply)(perfHist, weight)
-                    .tolist()
-                    .map((x) => x / (0, numjs_1.sum)(weight));
+                const rate = Math.round(6000 / (newTimeDiff + 1.98));
                 const record = idTag.get('record');
                 const data = {
-                    date: createdAt.substring(0, -3),
-                    aperf: aperf,
-                    rate: aperf,
+                    date: createdAt.slice(0, -3),
+                    rate: rate,
                 };
                 record.push(data);
                 idTag.increment('part');
-                yield Tags.update({ last: createdAt, record: [record] }, { where: { id: id } });
+                yield Tags.update({ last: createdAt, record: [record], rating: rate }, { where: { id: id } });
             }
             else {
                 const data = {
@@ -209,18 +233,22 @@ client.on('messageCreate', (message) => __awaiter(void 0, void 0, void 0, functi
                 const tag = yield Tags.create({
                     id: id,
                     name: author,
-                    best: createdAt.substring(10),
+                    best: createdAt.slice(10),
+                    rating: 0,
                     last: createdAt,
                     record: [data],
                 });
-                const aperf = 1600;
+                const newTime = new Date(createdAt);
+                const newTimeDiff = newTime.getMinutes() === 59
+                    ? 60 - newTime.getSeconds()
+                    : newTime.getSeconds();
+                const rate = Math.round(6200 / (newTimeDiff + 2.1));
                 tag.increment('part');
                 const newData = {
-                    date: createdAt.substring(0, -3),
-                    aperf: aperf,
-                    rate: aperf,
+                    date: createdAt.slice(0, -3),
+                    rate: rate,
                 };
-                Tags.update({ last: createdAt, record: [newData] }, { where: { id: id } });
+                Tags.update({ last: createdAt, record: [newData], rating: rate }, { where: { id: id } });
             }
         }
     }

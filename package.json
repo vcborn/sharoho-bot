@@ -23,10 +23,8 @@
     "chart.js": "^3.7.1",
     "discord.js": "^13.6.0",
     "dotenv": "^16.0.0",
-    "moment": "^2.29.1",
     "node-cron": "^3.0.0",
     "node-html-to-image": "^3.2.4",
-    "numjs": "^0.16.1",
     "sequelize": "^6.17.0",
     "sqlite3": "^5.0.2",
     "svg-to-img": "^2.0.9",
@@ -37,7 +35,6 @@
   },
   "devDependencies": {
     "@types/node-cron": "^3.0.1",
-    "@types/numjs": "^0.16.1",
     "@typescript-eslint/eslint-plugin": "^5.12.1",
     "@typescript-eslint/parser": "^5.12.1",
     "eslint": "^7.32.0",
