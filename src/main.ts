@@ -453,17 +453,28 @@ client.on('messageCreate', async (message: Message) => {
   if (message.content.startsWith('&set')) {
     // @ts-ignore
     if (client.settings.has('guild')) {
-      // @ts-ignore
-      if (client.settings.includes('guild', message.guild?.id)) {
+      if (
         // @ts-ignore
-        client.settings.remove('guild', message.guild?.id)
+        client.settings.get('guild').some((u) => u.guild === message.guild?.id)
+      ) {
+        // @ts-ignore
+        const oldId = client.settings
+          .get('guild')
+          .find((v: any) => v.guild === message.guild?.id).channel
+        // @ts-ignore
+        client.settings.remove('guild', (v) => v.channel === oldId)
       }
       // @ts-ignore
-      client.settings.push('guild', { [message.guild?.id]: message.channelId })
+      client.settings.push('guild', {
+        guild: message.guild?.id,
+        channel: message.channelId,
+      })
       message.reply('リザルトチャンネルを設定しました。')
     } else {
       // @ts-ignore
-      client.settings.set('guild', [{ [message.guild?.id]: message.channelId }])
+      client.settings.set('guild', [
+        { guild: message.guild?.id, channel: message.channelId },
+      ])
       message.reply('リザルトチャンネルを設定しました。')
     }
   }
