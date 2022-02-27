@@ -55,6 +55,8 @@ const Tags = sequelize.define('tags', {
 
 Tags.sync()
 
+const defaultChannel = ''
+
 const client = new Client({
   intents: ['GUILDS', 'GUILD_MEMBERS', 'GUILD_MESSAGES'],
 })
@@ -72,7 +74,13 @@ client.once('ready', async () => {
     raw: true,
     order: [['record.rate', 'DESC']],
   })
-  cron.schedule('* * * * *', async () => {
+  cron.schedule('58 23 * * *', async () => {
+    // @ts-ignore
+    client.channels.cache.get(defaultChannel).send({
+      content: 'しゃろしゃろ',
+    })
+  })
+  cron.schedule('3 0 * * *', async () => {
     if (fs.existsSync('today.png')) {
       fs.unlinkSync('today.png')
     }
@@ -165,7 +173,7 @@ client.once('ready', async () => {
     })
     const file = new MessageAttachment('./today.png')
     // @ts-ignore
-    client.channels.cache.get('709253882223788105').send({
+    client.channels.cache.get(defaultChannel).send({
       content: `SHAROHO RESULT (${now.getFullYear()}/${(
         '0' +
         (now.getMonth() + 1)

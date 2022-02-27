@@ -64,6 +64,7 @@ const Tags = sequelize.define('tags', {
     last: sequelize_1.STRING,
 });
 Tags.sync();
+const defaultChannel = '';
 const client = new discord_js_1.Client({
     intents: ['GUILDS', 'GUILD_MEMBERS', 'GUILD_MESSAGES'],
 });
@@ -81,7 +82,13 @@ client.once('ready', () => __awaiter(void 0, void 0, void 0, function* () {
         raw: true,
         order: [['record.rate', 'DESC']],
     });
-    node_cron_1.default.schedule('* * * * *', () => __awaiter(void 0, void 0, void 0, function* () {
+    node_cron_1.default.schedule('58 23 * * *', () => __awaiter(void 0, void 0, void 0, function* () {
+        // @ts-ignore
+        client.channels.cache.get(defaultChannel).send({
+            content: 'しゃろしゃろ',
+        });
+    }));
+    node_cron_1.default.schedule('3 0 * * *', () => __awaiter(void 0, void 0, void 0, function* () {
         if (fs_1.default.existsSync('today.png')) {
             fs_1.default.unlinkSync('today.png');
         }
@@ -134,28 +141,28 @@ client.once('ready', () => __awaiter(void 0, void 0, void 0, function* () {
                     const rec = item.last.substring(11);
                     let bgcolor = '#fff';
                     if (item.rate >= 2800) {
-                        bgcolor = 'rgba(255,0,0,0.5)';
+                        bgcolor = 'rgba(255,0,0,0.7)';
                     }
                     else if (item.rate >= 2400) {
-                        bgcolor = 'rgba(255,128,5,0.5)';
+                        bgcolor = 'rgba(255,128,5,0.7)';
                     }
                     else if (item.rate >= 2000) {
-                        bgcolor = 'rgba(192,192,0,0.5)';
+                        bgcolor = 'rgba(192,192,0,0.7)';
                     }
                     else if (item.rate >= 1600) {
-                        bgcolor = 'rgba(0,0,255,0.5)';
+                        bgcolor = 'rgba(0,0,255,0.7)';
                     }
                     else if (item.rate >= 1200) {
-                        bgcolor = 'rgba(192,192,0,0.5)';
+                        bgcolor = 'rgba(192,192,0,0.7)';
                     }
                     else if (item.rate >= 800) {
-                        bgcolor = 'rgba(0,128,0,0.5)';
+                        bgcolor = 'rgba(0,128,0,0.7)';
                     }
                     else if (item.rate >= 400) {
-                        bgcolor = 'rgba(128,64,0,0.5)';
+                        bgcolor = 'rgba(128,64,0,0.7)';
                     }
                     else {
-                        bgcolor = 'rgba(128,128,128,0.5)';
+                        bgcolor = 'rgba(128,128,128,0.7)';
                     }
                     return ("<tr style='background-color:" +
                         bgcolor +
@@ -174,7 +181,7 @@ client.once('ready', () => __awaiter(void 0, void 0, void 0, function* () {
         });
         const file = new discord_js_1.MessageAttachment('./today.png');
         // @ts-ignore
-        client.channels.cache.get('709253882223788105').send({
+        client.channels.cache.get(defaultChannel).send({
             content: `SHAROHO RESULT (${now.getFullYear()}/${('0' +
                 (now.getMonth() + 1)).slice(-2)}/${('0' + now.getDate()).slice(-2)})`,
             files: [file],
@@ -225,8 +232,6 @@ client.on('messageCreate', (message) => __awaiter(void 0, void 0, void 0, functi
             else {
                 const data = {
                     date: createdAt,
-                    aperf: 0,
-                    perf: [],
                     rate: 0,
                     rank: 0.5,
                 };
