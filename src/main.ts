@@ -90,7 +90,7 @@ client.once('ready', async () => {
   })
 })
 
-async function sendResult () {
+async function sendResult() {
   const now = new Date()
   console.log(now)
   const db = await Tags.findAll({
@@ -174,7 +174,7 @@ async function sendResult () {
           } else if (item.rating >= 400) {
             bgcolor = 'rgba(128,64,0,0.3)'
           } else {
-            bgcolor = 'rgba(128,128,128,0.7)'
+            bgcolor = 'rgba(128,128,128,0.3)'
           }
           return (
             "<tr style='background-color:" +
