@@ -355,9 +355,9 @@ client.on('messageCreate', async (message: Message) => {
           {
             title: {
               text: `しゃろほー${rank} ${author}`,
-              align: 'right',
+              align: 'left',
               anchor: 'start',
-              dx: 180,
+              dx: 40,
             },
             mark: {
               type: 'rect',
