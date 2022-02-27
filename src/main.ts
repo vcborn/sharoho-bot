@@ -160,19 +160,19 @@ async function sendResult () {
           const rec = item.last.substring(11)
           let bgcolor = '#fff'
           if (item.rating >= 2800) {
-            bgcolor = 'rgba(255,0,0,0.7)'
+            bgcolor = 'rgba(255,0,0,0.3)'
           } else if (item.rating >= 2400) {
-            bgcolor = 'rgba(255,128,5,0.7)'
+            bgcolor = 'rgba(255,128,5,0.3)'
           } else if (item.rating >= 2000) {
-            bgcolor = 'rgba(192,192,0,0.7)'
+            bgcolor = 'rgba(192,192,0,0.3)'
           } else if (item.rating >= 1600) {
-            bgcolor = 'rgba(0,0,255,0.7)'
+            bgcolor = 'rgba(0,0,255,0.3)'
           } else if (item.rating >= 1200) {
-            bgcolor = 'rgba(192,192,0,0.7)'
+            bgcolor = 'rgba(192,192,0,0.3)'
           } else if (item.rating >= 800) {
-            bgcolor = 'rgba(0,128,0,0.7)'
+            bgcolor = 'rgba(0,128,0,0.3)'
           } else if (item.rating >= 400) {
-            bgcolor = 'rgba(128,64,0,0.7)'
+            bgcolor = 'rgba(128,64,0,0.3)'
           } else {
             bgcolor = 'rgba(128,128,128,0.7)'
           }
