@@ -200,9 +200,8 @@ client.on('messageCreate', async (message: Message) => {
   if (message.author.bot) return
   if (message.content.startsWith('しゃろほー')) {
     if (
-      // ((now.getHours() === 23 || now.getHours() === 0) &&
-      now.getMinutes() === 59 ||
-      now.getMinutes() === 0
+      (now.getHours() === 23 && now.getMinutes() === 59) ||
+      (now.getHours() === 0 && now.getMinutes() === 0)
     ) {
       const author = message.author.username
       const id = message.author.id
