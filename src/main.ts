@@ -137,6 +137,7 @@ async function sendResult() {
   <tbody>` +
       // eslint-disable-next-line array-callback-return
       db.map((item: any, index) => {
+        let i = 0
         if (JSON.parse(item.record)[JSON.parse(item.record).length - 1].date.slice(0, -9) === `${now.getFullYear()}/${(
           '0' +
           (now.getMonth() + 1)
@@ -156,7 +157,6 @@ async function sendResult() {
               diff =
                 '+' +
                 (item.rating - JSON.parse(item.record)[JSON.parse(item.record).length - 2].rate)
-                  .toString
             } else {
               diff = item.rating - JSON.parse(item.record)[JSON.parse(item.record).length - 2].rate
             }
@@ -180,11 +180,12 @@ async function sendResult() {
           } else {
             bgcolor = 'rgba(128,128,128,0.3)'
           }
+          i++
           return (
             "<tr style='background-color:" +
             bgcolor +
             `'>
-        <td style='background-color:#fff'>${index + 1}</td>
+        <td style='background-color:#fff'>${i}</td>
         <td>${item.name}</td>
         <td>${rec}</td>
         <td>${item.rating}</td>
