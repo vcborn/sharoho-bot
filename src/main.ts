@@ -135,8 +135,9 @@ async function sendResult() {
     </tr>
   </thead>
   <tbody>` +
+      // eslint-disable-next-line array-callback-return
       db.map((item: any, index) => {
-        if (item.last.slice(0, -13) === `${now.getFullYear()}/${(
+        if (item.slice(-1).date.slice(0, -9) === `${now.getFullYear()}/${(
           '0' +
           (now.getMonth() + 1)
         ).slice(-2)}/${('0' + now.getDate()).slice(-2)}`) {
@@ -149,15 +150,15 @@ async function sendResult() {
           } else {
             if (
               Math.sign(
-                item.rating - JSON.parse(item.record).slice(-1)[0].rate,
+                item.rating - JSON.parse(item.record).slice(-2)[0].rate,
               ) === 1
             ) {
               diff =
                 '+' +
-                (item.rating - JSON.parse(item.record).slice(-1)[0].rate)
+                (item.rating - JSON.parse(item.record).slice(-2)[0].rate)
                   .toString
             } else {
-              diff = item.rating - JSON.parse(item.record).slice(-1)[0].rate
+              diff = item.rating - JSON.parse(item.record).slice(-2)[0].rate
             }
           }
           const rec = item.last.substring(11)
