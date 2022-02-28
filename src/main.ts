@@ -346,6 +346,9 @@ client.on('messageCreate', async (message: Message) => {
             labelFont: 'Noto Sans JP,sans-serif,Apple Color Emoji,Segoe UI Emoji',
             titleFont: 'Noto Sans JP,sans-serif,Apple Color Emoji,Segoe UI Emoji',
           },
+          point: {
+            color: '#222'
+          },
         },
         transform: [
           {
@@ -454,6 +457,7 @@ client.on('messageCreate', async (message: Message) => {
             mark: {
               type: 'line',
               point: true,
+              color: '#222',
             },
             data: {
               values: data,
