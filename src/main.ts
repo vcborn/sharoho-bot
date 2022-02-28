@@ -101,6 +101,7 @@ async function sendResult() {
   if (fs.existsSync('today.png')) {
     fs.unlinkSync('today.png')
   }
+  let i = 0
 
   await nodeHtmlToImage({
     output: './today.png',
@@ -137,7 +138,6 @@ async function sendResult() {
   <tbody>` +
       // eslint-disable-next-line array-callback-return
       db.map((item: any, index) => {
-        let i = 0
         if (JSON.parse(item.record)[JSON.parse(item.record).length - 1].date.slice(0, -9) === `${now.getFullYear()}/${(
           '0' +
           (now.getMonth() + 1)
