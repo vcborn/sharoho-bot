@@ -108,7 +108,7 @@ async function sendResult() {
       output: './today.png',
       html:
         `<html>
-    <body style="text-align:center;font-family:sans-serif;padding-top:5rem;padding-bottom:2.5rem;">
+    <body style="text-align:center;font-family:'Noto Sans JP',Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji';padding-top:5rem;padding-bottom:2.5rem;">
     <style>
     th, td {
     border:1px solid black;
@@ -232,12 +232,12 @@ client.on('messageCreate', async (message: Message) => {
         const lastTime = new Date(idTag.get('last'))
         const newTimeDiff =
           newTime.getMinutes() === 59
-            ? 60 - newTime.getSeconds()
-            : newTime.getSeconds()
+            ? 60 - (newTime.getSeconds() + newTime.getMilliseconds())
+            : newTime.getSeconds() + newTime.getMilliseconds()
         const lastTimeDiff =
           lastTime.getMinutes() === 59
-            ? 60 - lastTime.getSeconds()
-            : lastTime.getSeconds()
+            ? 60 - (lastTime.getSeconds() + lastTime.getMilliseconds())
+            : lastTime.getSeconds() + lastTime.getMilliseconds()
         if (lastTimeDiff > newTimeDiff) {
           await Tags.update({ best: best }, { where: { id: id } })
         }
@@ -291,7 +291,10 @@ client.on('messageCreate', async (message: Message) => {
   if (
     // @ts-ignore
     message.mentions.has(client.user.id) ||
-    message.content.startsWith('ランク' || 'らんく' || 'rank' || 'Rank')
+    message.content.startsWith('ランク') ||
+    message.content.startsWith('らんく') ||
+    message.content.startsWith('rank') ||
+    message.content.startsWith('Rank')
   ) {
     const id = message.author.id
     const author = message.author.username
@@ -340,8 +343,8 @@ client.on('messageCreate', async (message: Message) => {
         padding: 20,
         config: {
           axis: {
-            labelFont: 'Noto Sans JP,sans-serif',
-            titleFont: 'Noto Sans JP,sans-serif',
+            labelFont: 'Noto Sans JP,sans-serif,Apple Color Emoji,Segoe UI Emoji',
+            titleFont: 'Noto Sans JP,sans-serif,Apple Color Emoji,Segoe UI Emoji',
           },
         },
         transform: [
@@ -356,7 +359,7 @@ client.on('messageCreate', async (message: Message) => {
             title: {
               text: `しゃろほー${rank} ${author}`,
               align: 'left',
-              font: 'Noto Sans JP,sans-serif',
+              font: 'Noto Sans JP,sans-serif,Apple Color Emoji,Segoe UI Emoji',
               anchor: 'start',
               dx: 40,
             },
