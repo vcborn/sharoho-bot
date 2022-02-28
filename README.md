@@ -48,6 +48,6 @@ Diffは23:59の場合は60と現在秒の差、00:00の場合は現在秒を表�
 
 ![first time](https://latex.codecogs.com/gif.latex?%5Cbg_white%20Rate%20%3D%20%5Cleft%20%7C%5Cfrac%7B6200%7D%7BDiff%20&plus;%202.1%7D%20%5Cright%7C)
 
-### 初回参加時
+### 2回目以降
 
 ![first time](https://latex.codecogs.com/gif.latex?%5Cbg_white%20Rate%20%3D%20%5Cleft%20%7C%5Cfrac%7B6000%7D%7BDiff%20&plus;%201.98%7D%20%5Cright%7C)
