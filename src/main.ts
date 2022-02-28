@@ -137,7 +137,7 @@ async function sendResult() {
   <tbody>` +
       // eslint-disable-next-line array-callback-return
       db.map((item: any, index) => {
-        if (JSON.parse(item.record).slice(-1).date.slice(0, -9) === `${now.getFullYear()}/${(
+        if (JSON.parse(item.record)[JSON.parse(item.record).length - 1].date.slice(0, -9) === `${now.getFullYear()}/${(
           '0' +
           (now.getMonth() + 1)
         ).slice(-2)}/${('0' + now.getDate()).slice(-2)}`) {
@@ -150,15 +150,15 @@ async function sendResult() {
           } else {
             if (
               Math.sign(
-                item.rating - JSON.parse(item.record)[JSON.parse(item.record).length - 1].rate,
+                item.rating - JSON.parse(item.record)[JSON.parse(item.record).length - 2].rate,
               ) === 1
             ) {
               diff =
                 '+' +
-                (item.rating - JSON.parse(item.record)[JSON.parse(item.record).length - 1].rate)
+                (item.rating - JSON.parse(item.record)[JSON.parse(item.record).length - 2].rate)
                   .toString
             } else {
-              diff = item.rating - JSON.parse(item.record)[JSON.parse(item.record).length - 1].rate
+              diff = item.rating - JSON.parse(item.record)[JSON.parse(item.record).length - 2].rate
             }
           }
           const rec = item.last.substring(11)
