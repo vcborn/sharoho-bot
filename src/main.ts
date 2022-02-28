@@ -98,46 +98,48 @@ async function sendResult() {
     order: [['record.rate', 'DESC']],
   })
   let id = ''
-  // @ts-ignore
-  client.settings.get('guild').map(async (guild: any) => {
-    if (fs.existsSync('today.png')) {
-      fs.unlinkSync('today.png')
-    }
+  if (fs.existsSync('today.png')) {
+    fs.unlinkSync('today.png')
+  }
 
-    await nodeHtmlToImage({
-      output: './today.png',
-      html:
-        `<html>
-    <body style="text-align:center;font-family:'Noto Sans JP',Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji';padding-top:5rem;padding-bottom:2.5rem;">
-    <style>
-    th, td {
-    border:1px solid black;
-    padding-top:4px;
-    padding-bottom:4px;
-    }
-    th:first-child {
-    border:none
-    }
-    tr td {
-    padding-left:4px;
-    }
-    </style>
-    <h2>SHAROHO RESULT (${now.getFullYear()}/${(
+  await nodeHtmlToImage({
+    output: './today.png',
+    html:
+      `<html>
+  <body style="text-align:center;font-family:'Noto Sans JP',Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji';padding-top:5rem;padding-bottom:2.5rem;">
+  <style>
+  th, td {
+  border:1px solid black;
+  padding-top:4px;
+  padding-bottom:4px;
+  }
+  th:first-child {
+  border:none
+  }
+  tr td {
+  padding-left:4px;
+  }
+  </style>
+  <h2>SHAROHO RESULT (${now.getFullYear()}/${(
+        '0' +
+        (now.getMonth() + 1)
+      ).slice(-2)}/${('0' + now.getDate()).slice(-2)})</h2>
+  <table style="margin-left:auto;margin-right:auto;width:80%;border-collapse:collapse">
+  <thead>
+    <tr>
+      <th></th>
+      <th>Name</th>
+      <th>Record</th>
+      <th>Rating</th>
+      <th>Change</th>
+    </tr>
+  </thead>
+  <tbody>` +
+      db.map((item: any, index) => {
+        if (item.last.slice(0, -13) === `${now.getFullYear()}/${(
           '0' +
           (now.getMonth() + 1)
-        ).slice(-2)}/${('0' + now.getDate()).slice(-2)})</h2>
-    <table style="margin-left:auto;margin-right:auto;width:80%;border-collapse:collapse">
-    <thead>
-      <tr>
-        <th></th>
-        <th>Name</th>
-        <th>Record</th>
-        <th>Rating</th>
-        <th>Change</th>
-      </tr>
-    </thead>
-    <tbody>` +
-        db.map((item: any, index) => {
+        ).slice(-2)}/${('0' + now.getDate()).slice(-2)}`) {
           let diff = null
           if (index === 0) {
             id = item.id
@@ -188,12 +190,15 @@ async function sendResult() {
         <td>${diff}</td>
         </tr>`
           )
-        }) +
-        `</tbody>
-    </table>
-    </body>
-    </html>`,
-    })
+        }
+      }) +
+      `</tbody>
+  </table>
+  </body>
+  </html>`,
+  })
+  // @ts-ignore
+  client.settings.get('guild').map(async (guild: any) => {
     const file = new MessageAttachment('./today.png')
     // @ts-ignore
     const channel = Object.values(guild)[1]
@@ -232,12 +237,12 @@ client.on('messageCreate', async (message: Message) => {
         const lastTime = new Date(idTag.get('last'))
         const newTimeDiff =
           newTime.getMinutes() === 59
-            ? 60 - (newTime.getSeconds() + newTime.getMilliseconds())
-            : newTime.getSeconds() + newTime.getMilliseconds()
+            ? 60 - (newTime.getSeconds() + newTime.getMilliseconds() / 1000)
+            : newTime.getSeconds() + newTime.getMilliseconds() / 1000
         const lastTimeDiff =
           lastTime.getMinutes() === 59
-            ? 60 - (lastTime.getSeconds() + lastTime.getMilliseconds())
-            : lastTime.getSeconds() + lastTime.getMilliseconds()
+            ? 60 - (lastTime.getSeconds() + lastTime.getMilliseconds() / 1000)
+            : lastTime.getSeconds() + lastTime.getMilliseconds() / 1000
         if (lastTimeDiff > newTimeDiff) {
           await Tags.update({ best: best }, { where: { id: id } })
         }
@@ -251,7 +256,7 @@ client.on('messageCreate', async (message: Message) => {
         record.push(data)
         idTag.increment('part')
         await Tags.update(
-          { name: author, last: createdAt, record: [record], rating: rate },
+          { name: author, last: createdAt, record: record, rating: rate },
           { where: { id: id } },
         )
       } else {
