@@ -137,7 +137,7 @@ async function sendResult() {
   <tbody>` +
       // eslint-disable-next-line array-callback-return
       db.map((item: any, index) => {
-        if ((((item.record).slice(-1)).date).slice(0, -9) === `${now.getFullYear()}/${(
+        if (JSON.parse(item.record).slice(-1).date.slice(0, -9) === `${now.getFullYear()}/${(
           '0' +
           (now.getMonth() + 1)
         ).slice(-2)}/${('0' + now.getDate()).slice(-2)}`) {
