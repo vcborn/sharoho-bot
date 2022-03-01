@@ -102,11 +102,64 @@ async function sendResult() {
     fs.unlinkSync('today.png')
   }
   let i = 0
-
-  await nodeHtmlToImage({
-    output: './today.png',
-    html:
-      `<html>
+  const eachData = db.map((item: any, index) => {
+    if (JSON.parse(item.record)[JSON.parse(item.record).length - 1].date.slice(0, -9) === `${now.getFullYear()}/${(
+      '0' +
+      (now.getMonth() + 1)
+    ).slice(-2)}/${('0' + now.getDate()).slice(-2)}`) {
+      let diff = null
+      if (index === 0) {
+        id = item.id
+      }
+      if (JSON.parse(item.record).length === 1) {
+        diff = 'NEW'
+      } else {
+        if (
+          Math.sign(
+            item.rating - JSON.parse(item.record)[JSON.parse(item.record).length - 2].rate,
+          ) === 1
+        ) {
+          diff =
+            '+' +
+            (item.rating - JSON.parse(item.record)[JSON.parse(item.record).length - 2].rate)
+        } else {
+          diff = item.rating - JSON.parse(item.record)[JSON.parse(item.record).length - 2].rate
+        }
+      }
+      const rec = item.last.substring(11)
+      let bgcolor = '#fff'
+      if (item.rating >= 2800) {
+        bgcolor = 'rgba(255,0,0,0.3)'
+      } else if (item.rating >= 2400) {
+        bgcolor = 'rgba(255,128,5,0.3)'
+      } else if (item.rating >= 2000) {
+        bgcolor = 'rgba(192,192,0,0.3)'
+      } else if (item.rating >= 1600) {
+        bgcolor = 'rgba(0,0,255,0.3)'
+      } else if (item.rating >= 1200) {
+        bgcolor = 'rgba(192,192,0,0.3)'
+      } else if (item.rating >= 800) {
+        bgcolor = 'rgba(0,128,0,0.3)'
+      } else if (item.rating >= 400) {
+        bgcolor = 'rgba(128,64,0,0.3)'
+      } else {
+        bgcolor = 'rgba(128,128,128,0.3)'
+      }
+      i++
+      return (
+        "<tr style='background-color:" +
+        bgcolor +
+        `'>
+    <td style='background-color:#fff'>${i}</td>
+    <td>${item.name}</td>
+    <td>${rec}</td>
+    <td>${item.rating}</td>
+    <td>${diff}</td>
+    </tr>`
+      )
+    }
+  })
+  const html = `<html>
   <body style="text-align:center;font-family:'Noto Sans JP',Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji';padding-top:5rem;padding-bottom:2.5rem;">
   <style>
   th, td {
@@ -136,68 +189,15 @@ async function sendResult() {
     </tr>
   </thead>
   <tbody>` +
-      // eslint-disable-next-line array-callback-return
-      db.map((item: any, index) => {
-        if (JSON.parse(item.record)[JSON.parse(item.record).length - 1].date.slice(0, -9) === `${now.getFullYear()}/${(
-          '0' +
-          (now.getMonth() + 1)
-        ).slice(-2)}/${('0' + now.getDate()).slice(-2)}`) {
-          let diff = null
-          if (index === 0) {
-            id = item.id
-          }
-          if (JSON.parse(item.record).length === 1) {
-            diff = 'NEW'
-          } else {
-            if (
-              Math.sign(
-                item.rating - JSON.parse(item.record)[JSON.parse(item.record).length - 2].rate,
-              ) === 1
-            ) {
-              diff =
-                '+' +
-                (item.rating - JSON.parse(item.record)[JSON.parse(item.record).length - 2].rate)
-            } else {
-              diff = item.rating - JSON.parse(item.record)[JSON.parse(item.record).length - 2].rate
-            }
-          }
-          const rec = item.last.substring(11)
-          let bgcolor = '#fff'
-          if (item.rating >= 2800) {
-            bgcolor = 'rgba(255,0,0,0.3)'
-          } else if (item.rating >= 2400) {
-            bgcolor = 'rgba(255,128,5,0.3)'
-          } else if (item.rating >= 2000) {
-            bgcolor = 'rgba(192,192,0,0.3)'
-          } else if (item.rating >= 1600) {
-            bgcolor = 'rgba(0,0,255,0.3)'
-          } else if (item.rating >= 1200) {
-            bgcolor = 'rgba(192,192,0,0.3)'
-          } else if (item.rating >= 800) {
-            bgcolor = 'rgba(0,128,0,0.3)'
-          } else if (item.rating >= 400) {
-            bgcolor = 'rgba(128,64,0,0.3)'
-          } else {
-            bgcolor = 'rgba(128,128,128,0.3)'
-          }
-          i++
-          return (
-            "<tr style='background-color:" +
-            bgcolor +
-            `'>
-        <td style='background-color:#fff'>${i}</td>
-        <td>${item.name}</td>
-        <td>${rec}</td>
-        <td>${item.rating}</td>
-        <td>${diff}</td>
-        </tr>`
-          )
-        }
-      }) +
+       eachData.join('') +
       `</tbody>
   </table>
   </body>
-  </html>`,
+  </html>`
+
+  await nodeHtmlToImage({
+    output: './today.png',
+    html: html,
   })
   // @ts-ignore
   client.settings.get('guild').map(async (guild: any) => {
@@ -594,7 +594,7 @@ client.on('messageCreate', async (message: Message) => {
       ],
     })
   }
-  if (message.content.startsWith('&res')) {
+  if (message.content.startsWith('&res') && message.author.id === '368027170003484673') {
     sendResult()
   }
 })
