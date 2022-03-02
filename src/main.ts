@@ -77,7 +77,6 @@ client.once('ready', async () => {
   cron.schedule('58 23 * * *', async () => {
     // @ts-ignore
     client.settings.get('guild').map(async (guild: any) => {
-      // @ts-ignore
       const channel = Object.values(guild)[1]
       // @ts-ignore
       client.channels.cache.get(channel).send({
@@ -102,6 +101,7 @@ async function sendResult() {
     fs.unlinkSync('today.png')
   }
   let i = 0
+  // eslint-disable-next-line array-callback-return
   const eachData = db.map((item: any, index) => {
     if (JSON.parse(item.record)[JSON.parse(item.record).length - 1].date.slice(0, -9) === `${now.getFullYear()}/${(
       '0' +
@@ -202,7 +202,6 @@ async function sendResult() {
   // @ts-ignore
   client.settings.get('guild').map(async (guild: any) => {
     const file = new MessageAttachment('./today.png')
-    // @ts-ignore
     const channel = Object.values(guild)[1]
     // @ts-ignore
     client.channels.cache.get(channel).send({
@@ -235,7 +234,6 @@ client.on('messageCreate', async (message: Message) => {
       const best = createdAt.substring(11)
       if (idTag) {
         const newTime = new Date(createdAt)
-        // @ts-ignore
         const lastTime = new Date(idTag.get('last'))
         const newTimeDiff =
           newTime.getMinutes() === 59
@@ -249,7 +247,10 @@ client.on('messageCreate', async (message: Message) => {
           await Tags.update({ best: best }, { where: { id: id } })
         }
 
-        const rate = Math.round(6000 / (newTimeDiff + 1.98))
+        let rate = Math.round(6000 + idTag.get('part') / (newTimeDiff + 1.98))
+        if (newTime.getMinutes() === 59) {
+          rate -= 600
+        }
         const record: any = idTag.get('record')
         const data = {
           date: createdAt.slice(0, -4),
@@ -281,8 +282,10 @@ client.on('messageCreate', async (message: Message) => {
           newTime.getMinutes() === 59
             ? 60 - newTime.getSeconds()
             : newTime.getSeconds()
-        const rate = Math.round(6200 / (newTimeDiff + 2.1))
-
+        let rate = Math.round(6200 / (newTimeDiff + 2.1))
+        if (newTime.getMinutes() === 59) {
+          rate -= 600
+        }
         tag.increment('part')
         const newData = {
           date: createdAt.slice(0, -4),
