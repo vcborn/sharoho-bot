@@ -94,7 +94,7 @@ async function sendResult() {
   console.log(now)
   const db = await Tags.findAll({
     raw: true,
-    order: [['record.rate', 'DESC']],
+    order: [['rating', 'DESC']],
   })
   let id = ''
   if (fs.existsSync('today.png')) {
