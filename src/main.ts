@@ -94,7 +94,7 @@ async function sendResult() {
   console.log(now)
   const db = await Tags.findAll({
     raw: true,
-    order: [['rating', 'DESC']],
+    order: [['last', 'ASC']],
   })
   let id = ''
   if (fs.existsSync('today.png')) {
@@ -247,7 +247,7 @@ client.on('messageCreate', async (message: Message) => {
           await Tags.update({ best: best }, { where: { id: id } })
         }
 
-        let rate = Math.round(6000 / (newTimeDiff + 1.98))
+        let rate = Math.round((6000 + idTag.get('part')) / (newTimeDiff + 1.98))
         if (newTime.getMinutes() === 59) {
           rate -= 600
         }
