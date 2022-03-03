@@ -528,6 +528,9 @@ client.on('messageCreate', async (message: Message) => {
       message.reply('登録されていません。')
     }
   }
+  if (message.content.startsWith('しゃろしゃろ')) {
+    message.reply('送信時刻：' + message.createdAt)
+  }
   if (message.content.startsWith('&set')) {
     // @ts-ignore
     if (client.settings.has('guild')) {
