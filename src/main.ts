@@ -557,13 +557,34 @@ client.on('messageCreate', async (message: Message) => {
         guild: message.guild?.id,
         channel: message.channelId,
       })
-      message.reply('リザルトチャンネルを設定しました。')
+      message.reply('リザルトチャンネルに設定しました。')
     } else {
       // @ts-ignore
       client.settings.set('guild', [
         { guild: message.guild?.id, channel: message.channelId },
       ])
-      message.reply('リザルトチャンネルを設定しました。')
+      message.reply('リザルトチャンネルに設定しました。')
+    }
+  }
+  if (message.content.startsWith('&remove')) {
+    // @ts-ignore
+    if (client.settings.has('guild')) {
+      if (
+        // @ts-ignore
+        client.settings.get('guild').some((u) => u.guild === message.guild?.id)
+      ) {
+        // @ts-ignore
+        const oldId = client.settings
+          .get('guild')
+          .find((v: any) => v.guild === message.guild?.id).channel
+        // @ts-ignore
+        client.settings.remove('guild', (v) => v.channel === oldId)
+        message.reply('リザルトチャンネルから除外しました。')
+      } else {
+        message.reply('リザルトチャンネルが設定されていません。')
+      }
+    } else {
+      message.reply('問題が発生しました。管理者に連絡してください。')
     }
   }
   if (message.content.startsWith('&help')) {
