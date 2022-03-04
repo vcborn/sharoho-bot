@@ -1,7 +1,7 @@
 import { Message, Client, MessageAttachment } from 'discord.js'
 import dotenv from 'dotenv'
 import { Sequelize, STRING, INTEGER, JSON as SJSON } from 'sequelize'
-import { timestamp } from 'timestamp-conv'
+import { timestamp as Timestamp } from 'timestamp-conv'
 import nodeHtmlToImage from 'node-html-to-image'
 import cron from 'node-cron'
 import { TopLevelSpec, compile } from 'vega-lite'
@@ -226,8 +226,7 @@ client.on('messageCreate', async (message: Message) => {
     ) {
       const author = message.author.username
       const id = message.author.id
-      // eslint-disable-next-line new-cap
-      const date = new timestamp(message.createdAt)
+      const date = new Timestamp(message.createdAt)
       // YYYY-MM-DD hh:mm:ss.ms
       const createdAt = `${date.getYear()}/${date.getMonth()}/${date.getDay()} ${date.getHour()}:${date.getMinute()}:${date.getSeconds()}.${date.getMilliseconds()}`
       const idTag: any = await Tags.findOne({ where: { id: id } })
@@ -536,7 +535,8 @@ client.on('messageCreate', async (message: Message) => {
     }
   }
   if (message.content.startsWith('しゃろしゃろ')) {
-    message.reply('送信時刻：' + message.createdAt)
+    const date = new Timestamp(message.createdAt)
+    message.reply(`送信時刻：${date.getYear()}/${date.getMonth()}/${date.getDay()} ${date.getHour()}:${date.getMinute()}:${date.getSeconds()}.${date.getMilliseconds()}`)
   }
   if (message.content.startsWith('&set')) {
     // @ts-ignore
