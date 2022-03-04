@@ -601,7 +601,11 @@ client.on('messageCreate', async (message: Message) => {
             },
             {
               name: '&set',
-              value: 'リザルトを送信するチャンネルを設定',
+              value: 'リザルトを送信するチャンネルに設定',
+            },
+            {
+              name: '&remove',
+              value: 'リザルトチャンネルから除外',
             },
             {
               name: '&help',
