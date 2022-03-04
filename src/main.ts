@@ -248,12 +248,19 @@ client.on('messageCreate', async (message: Message) => {
         }
 
         let rate = Math.round((6000 + idTag.get('part')) / (newTimeDiff + 1.98))
-        if (newTime.getMinutes() === 59) {
-          rate -= 600
-        }
         const record: any = idTag.get('record')
+        if (date.getMinute() === 59) {
+          rate -= 600
+          now.setDate(now.getDate() + 1)
+        }
+        const today = date.getMinute() === 59
+          ? `${now.getFullYear()}/${(
+          '0' +
+          (now.getMonth() + 1)
+        ).slice(-2)}/${('0' + now.getDate()).slice(-2)} ${date.getHour()}:${date.getMinute()}:${date.getSeconds()}`
+          : `${date.getYear()}/${date.getMonth()}/${date.getDay()} ${date.getHour()}:${date.getMinute()}:${date.getSeconds()}`
         const data = {
-          date: createdAt.slice(0, -4),
+          date: today,
           rate: rate,
         }
         record.push(data)
