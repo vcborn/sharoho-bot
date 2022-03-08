@@ -218,8 +218,11 @@ async function sendResult() {
 
 client.on('messageCreate', async (message: Message) => {
   const now = new Date()
+  // botは無視
   if (message.author.bot) return
+  // しゃろほー
   if (message.content.startsWith('しゃろほー')) {
+    // 23:59か00:00
     if (
       (now.getHours() === 23 && now.getMinutes() === 59) ||
       (now.getHours() === 0 && now.getMinutes() === 0)
@@ -229,11 +232,14 @@ client.on('messageCreate', async (message: Message) => {
       const date = new Timestamp(message.createdAt)
       // YYYY-MM-DD hh:mm:ss.ms
       const createdAt = `${date.getYear()}/${date.getMonth()}/${date.getDay()} ${date.getHour()}:${date.getMinute()}:${date.getSeconds()}.${date.getMilliseconds()}`
+      // ユーザーIDで検索
       const idTag: any = await Tags.findOne({ where: { id: id } })
       const best = createdAt.substring(11)
       if (idTag) {
+        // 今回と前回の日時生成
         const newTime = new Date(createdAt)
         const lastTime = new Date(idTag.get('last'))
+        // 差分を計算
         const newTimeDiff =
           newTime.getMinutes() === 59
             ? 60 - (newTime.getSeconds() + newTime.getMilliseconds() / 1000)
@@ -242,15 +248,19 @@ client.on('messageCreate', async (message: Message) => {
           lastTime.getMinutes() === 59
             ? 60 - (lastTime.getSeconds() + lastTime.getMilliseconds() / 1000)
             : lastTime.getSeconds() + lastTime.getMilliseconds() / 1000
+        // 前回より良ければ保存
         if (lastTimeDiff > newTimeDiff) {
           await Tags.update({ best: best }, { where: { id: id } })
         }
 
+        // ランク計算
         let rate = Math.round((6000 + idTag.get('part')) / (newTimeDiff + 1.98))
         const record: any = idTag.get('record')
+
+        // フライング処理
         if (date.getMinute() === 59) {
           rate -= 600
-          now.setDate(now.getDate() + 1)
+          now.setDate(date.getDay() + 1)
         }
         const today = date.getMinute() === 59
           ? `${now.getFullYear()}/${(
@@ -258,12 +268,17 @@ client.on('messageCreate', async (message: Message) => {
           (now.getMonth() + 1)
         ).slice(-2)}/${('0' + now.getDate()).slice(-2)} ${date.getHour()}:${date.getMinute()}:${date.getSeconds()}`
           : `${date.getYear()}/${date.getMonth()}/${date.getDay()} ${date.getHour()}:${date.getMinute()}:${date.getSeconds()}`
+
+        // 当日記録の作成
         const data = {
           date: today,
           rate: rate,
         }
+        // 記録追加
         record.push(data)
+        // 参加回数追加
         idTag.increment('part')
+        // データ更新
         await Tags.update(
           { name: author, last: createdAt, record: record, rating: rate },
           { where: { id: id } },
@@ -319,6 +334,7 @@ client.on('messageCreate', async (message: Message) => {
       const data: any = idTag.get('record')
       const rate: any = idTag.get('rating')
       let rank = ''
+      // ランクごとの処理
       if (rate >= 3000) {
         rank = '六段'
       } else if (rate >= 2800) {
@@ -352,6 +368,8 @@ client.on('messageCreate', async (message: Message) => {
       } else {
         rank = '十級'
       }
+
+      // Vegaのコンフィグ
       const vegaLiteSpec: TopLevelSpec = {
         $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
         width: 640,
@@ -503,13 +521,17 @@ client.on('messageCreate', async (message: Message) => {
       }
       const vegaSpec = compile(vegaLiteSpec).spec
       const view = new View(parse(vegaSpec), { renderer: 'none' })
+      // SVGを生成
       view.toSVG().then((svg) => {
         ;(async () => {
+          // PNGに変換
           const image = await from(svg).toPng()
 
           try {
+            // 書き込み
             fs.writeFileSync('dest.png', image)
             const file = new MessageAttachment('./dest.png')
+            // 返信
             message.reply({
               content:
                 idTag.get('name') +
@@ -534,6 +556,7 @@ client.on('messageCreate', async (message: Message) => {
       message.reply('登録されていません。')
     }
   }
+  // 送信時刻を返信
   if (message.content.startsWith('しゃろしゃろ')) {
     const date = new Timestamp(message.createdAt)
     message.reply(`送信時刻：${date.getYear()}/${date.getMonth()}/${date.getDay()} ${date.getHour()}:${date.getMinute()}:${date.getSeconds()}.${date.getMilliseconds()}`)
@@ -542,13 +565,16 @@ client.on('messageCreate', async (message: Message) => {
     // @ts-ignore
     if (client.settings.has('guild')) {
       if (
+        // guildがあり、なおかつ送信元サーバーのIDがある
         // @ts-ignore
         client.settings.get('guild').some((u) => u.guild === message.guild?.id)
       ) {
+        // 変更前のチャンネルIDを取得
         // @ts-ignore
         const oldId = client.settings
           .get('guild')
           .find((v: any) => v.guild === message.guild?.id).channel
+        // 合致するものを削除
         // @ts-ignore
         client.settings.remove('guild', (v) => v.channel === oldId)
       }
@@ -559,6 +585,7 @@ client.on('messageCreate', async (message: Message) => {
       })
       message.reply('リザルトチャンネルに設定しました。')
     } else {
+      // guildが無ければ新しく作成
       // @ts-ignore
       client.settings.set('guild', [
         { guild: message.guild?.id, channel: message.channelId },
