@@ -262,7 +262,7 @@ client.on('messageCreate', async (message: Message) => {
         if (date.getMinute() === 59) {
           now.setDate(date.getDay() + 1)
         }
-        if (JSON.parse(idTag.get('record'))[JSON.parse(idTag.get('record')).length - 1].date.slice(0, -9) == `${now.getFullYear()}/${(
+        if (JSON.parse(idTag.get('record'))[JSON.parse(idTag.get('record')).length - 1].date.slice(0, -9) === `${now.getFullYear()}/${(
           '0' +
           (now.getMonth() + 1)
         ).slice(-2)}/${('0' + now.getDate()).slice(-2)}`) {
