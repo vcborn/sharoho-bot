@@ -10,8 +10,10 @@ import fs from 'fs'
 import { from } from 'svg-to-img'
 import Enmap from 'enmap'
 
+// dotenvからコンフィグを読み込み
 dotenv.config()
 
+// Sequelizeの設定
 const sequelize = new Sequelize('database', 'user', 'password', {
   host: 'localhost',
   dialect: 'sqlite',
@@ -19,6 +21,7 @@ const sequelize = new Sequelize('database', 'user', 'password', {
   storage: 'database.sqlite',
 })
 
+// 各タグ（データ）の構造
 const Tags = sequelize.define('tags', {
   // ID（ユニークID）
   id: {
@@ -60,6 +63,7 @@ const client = new Client({
   intents: ['GUILDS', 'GUILD_MEMBERS', 'GUILD_MESSAGES'],
 })
 
+// enmapの設定
 // @ts-ignore
 client.settings = new Enmap({
   name: 'settings',
@@ -68,49 +72,63 @@ client.settings = new Enmap({
   cloneLevel: 'deep',
 })
 
+// botがreadyになったら
 client.once('ready', async () => {
   if (fs.existsSync('dest.png')) {
     fs.unlinkSync('dest.png')
   }
+  // 現在のbotのユーザータグを表示
   console.log(client.user?.tag)
+  // アクティビティを設定
   client.user?.setActivity('&set | しゃろしゃろ')
+  // cronで毎日23時58分に実行
   cron.schedule('58 23 * * *', async () => {
+    // 全てのリザルトチャンネルを取得
     // @ts-ignore
     client.settings.get('guild').map(async (guild: any) => {
       const channel = Object.values(guild)[1]
+      // メッセージを送信
       // @ts-ignore
       client.channels.cache.get(channel).send({
         content: 'しゃろしゃろ',
       })
     })
   })
+  // cronで毎日0時3分に実行
   cron.schedule('3 0 * * *', () => {
     sendResult()
   })
 })
 
 async function sendResult() {
+  // 現在の日付を取得
   const now = new Date()
   console.log(now)
+  // 全てのデータを取得（時刻順）
   const db = await Tags.findAll({
     raw: true,
     order: [['last', 'ASC']],
   })
-  let id = ''
+  // @ts-ignore
+  const id = db[0].id
+  // 優勝IDとマッチする物を検索
+  const idTag: any = await Tags.findOne({ where: { id: id } })
+  // 優勝回数を追加
+  idTag.increment('win')
   if (fs.existsSync('today.png')) {
     fs.unlinkSync('today.png')
   }
   let i = 0
+  // 各行ごとに呼び出し
   // eslint-disable-next-line array-callback-return
   const eachData = db.map((item: any, index) => {
+    // 今日の日付と最終参加記録の日付がマッチするか
     if (JSON.parse(item.record)[JSON.parse(item.record).length - 1].date.slice(0, -9) === `${now.getFullYear()}/${(
       '0' +
       (now.getMonth() + 1)
     ).slice(-2)}/${('0' + now.getDate()).slice(-2)}`) {
       let diff = null
-      if (index === 0) {
-        id = item.id
-      }
+      // もし新規であればNEW、そうでなければ符号付で差分を表示
       if (JSON.parse(item.record).length === 1) {
         diff = 'NEW'
       } else {
@@ -127,6 +145,7 @@ async function sendResult() {
         }
       }
       const rec = item.last.substring(11)
+      // レートごとに色を変える
       let bgcolor = '#fff'
       if (item.rating >= 2800) {
         bgcolor = 'rgba(255,0,0,0.3)'
@@ -159,6 +178,7 @@ async function sendResult() {
       )
     }
   })
+  // デフォルトの表を作成
   const html = `<html>
   <body style="text-align:center;font-family:'Noto Sans JP',Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji';padding-top:5rem;padding-bottom:2.5rem;">
   <style>
@@ -195,14 +215,19 @@ async function sendResult() {
   </body>
   </html>`
 
+  // htmlから画像に変換
   await nodeHtmlToImage({
     output: './today.png',
     html: html,
   })
+  // 登録されている全てのリザルトチャンネルを取得
   // @ts-ignore
   client.settings.get('guild').map(async (guild: any) => {
+    // 添付ファイルに追加
     const file = new MessageAttachment('./today.png')
+    // チャンネルIDを取得
     const channel = Object.values(guild)[1]
+    // チャンネルに送信
     // @ts-ignore
     client.channels.cache.get(channel).send({
       content: `SHAROHO RESULT (${now.getFullYear()}/${(
@@ -212,8 +237,6 @@ async function sendResult() {
       files: [file],
     })
   })
-  const idTag: any = await Tags.findOne({ where: { id: id } })
-  idTag.increment('win')
 }
 
 client.on('messageCreate', async (message: Message) => {
@@ -284,11 +307,13 @@ client.on('messageCreate', async (message: Message) => {
           { where: { id: id } },
         )
       } else {
+        // 記録用の初期データを作成
         const data = {
           date: createdAt,
           rate: 0,
           rank: 0.5,
         }
+        // タグの初期データを作成
         const tag: any = await Tags.create({
           id: id,
           name: author,
@@ -298,20 +323,24 @@ client.on('messageCreate', async (message: Message) => {
           last: createdAt,
           record: [data],
         })
+        // 差分を計算
         const newTime = new Date(createdAt)
         const newTimeDiff =
           newTime.getMinutes() === 59
             ? 60 - newTime.getSeconds()
             : newTime.getSeconds()
+        // レートを計算
         let rate = Math.round(6200 / (newTimeDiff + 2.1))
         if (newTime.getMinutes() === 59) {
           rate -= 600
         }
+        // 参加回数を追加
         tag.increment('part')
         const newData = {
           date: createdAt.slice(0, -4),
           rate: rate,
         }
+        // データ更新
         Tags.update(
           { last: createdAt, record: [newData], rating: rate },
           { where: { id: id } },
@@ -325,7 +354,9 @@ client.on('messageCreate', async (message: Message) => {
     message.content.startsWith('rank') ||
     message.content.startsWith('Rank')
   ) {
+    // 送信者のID
     const id = message.author.id
+    // 送信者のユーザー名
     const author = message.author.username
     const idTag = await Tags.findOne({ where: { id: id } })
     if (idTag) {
@@ -592,16 +623,20 @@ client.on('messageCreate', async (message: Message) => {
     }
   }
   if (message.content.startsWith('&remove')) {
+    // もしguild項目があれば
     // @ts-ignore
     if (client.settings.has('guild')) {
       if (
+        // リザルトチャンネルが送信元のサーバーIDに紐づけられているか
         // @ts-ignore
         client.settings.get('guild').some((u) => u.guild === message.guild?.id)
       ) {
+        // 現在のリザルトチャンネルのIDを取得
         // @ts-ignore
         const oldId = client.settings
           .get('guild')
           .find((v: any) => v.guild === message.guild?.id).channel
+        // 該当のタグを削除
         // @ts-ignore
         client.settings.remove('guild', (v) => v.channel === oldId)
         message.reply('リザルトチャンネルから除外しました。')
@@ -657,6 +692,7 @@ client.on('messageCreate', async (message: Message) => {
       ],
     })
   }
+  // ユーザー認証を追加（message.author.idは管理者のユーザーID）
   if (message.content.startsWith('&res') && message.author.id === '368027170003484673') {
     sendResult()
   }
