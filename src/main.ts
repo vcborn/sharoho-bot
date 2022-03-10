@@ -320,8 +320,6 @@ client.on('messageCreate', async (message: Message) => {
     }
   }
   if (
-    // @ts-ignore
-    message.mentions.has(client.user.id) ||
     message.content.startsWith('ランク') ||
     message.content.startsWith('らんく') ||
     message.content.startsWith('rank') ||
