@@ -259,6 +259,15 @@ client.on('messageCreate', async (message: Message) => {
       const idTag: any = await Tags.findOne({ where: { id: id } })
       const best = createdAt.substring(11)
       if (idTag) {
+        if (date.getMinute() === 59) {
+          now.setDate(date.getDay() + 1)
+        }
+        if (JSON.parse(idTag.get('record'))[JSON.parse(idTag.get('record')).length - 1].date.slice(0, -9) == `${now.getFullYear()}/${(
+          '0' +
+          (now.getMonth() + 1)
+        ).slice(-2)}/${('0' + now.getDate()).slice(-2)}`) {
+          return
+        }
         // 今回と前回の日時生成
         const newTime = new Date(createdAt)
         const lastTime = new Date(idTag.get('last'))
@@ -283,7 +292,6 @@ client.on('messageCreate', async (message: Message) => {
         // フライング処理
         if (date.getMinute() === 59) {
           rate -= 600
-          now.setDate(date.getDay() + 1)
         }
         const today = date.getMinute() === 59
           ? `${now.getFullYear()}/${(
