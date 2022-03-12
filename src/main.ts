@@ -107,7 +107,7 @@ async function sendResult() {
   // 全てのデータを取得（時刻順）
   const db = await Tags.findAll({
     raw: true,
-    order: [['last', 'ASC']],
+    order: [['rating', 'ASC']],
   })
   // @ts-ignore
   const id = db[0].id
