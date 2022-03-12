@@ -254,7 +254,7 @@ client.on('messageCreate', async (message: Message) => {
       const id = message.author.id
       const date = new Timestamp(message.createdAt)
       // YYYY-MM-DD hh:mm:ss.ms
-      const createdAt = `${date.getYear()}/${date.getMonth()}/${date.getDay()} ${date.getHour()}:${date.getMinute()}:${date.getSeconds()}.${date.getMilliseconds()}`
+      const createdAt = `${date.getYear()}/${date.getMonth()}/${date.getDay()} ${date.getHour()}:${date.getMinute()}:${date.getSeconds()}.${parseInt('0.' + date.getMilliseconds().toString().padStart(3, '0'))}`
       // ユーザーIDで検索
       const idTag: any = await Tags.findOne({ where: { id: id } })
       const best = createdAt.substring(11)
@@ -265,12 +265,12 @@ client.on('messageCreate', async (message: Message) => {
         // 差分を計算
         const newTimeDiff =
           newTime.getMinutes() === 59
-            ? 60 - (newTime.getSeconds() + newTime.getMilliseconds() / 1000)
-            : newTime.getSeconds() + newTime.getMilliseconds() / 1000
+            ? 60 - (newTime.getSeconds() + parseInt('0.' + newTime.getMilliseconds().toString().padStart(3, '0')) / 1000)
+            : newTime.getSeconds() + parseInt('0.' + newTime.getMilliseconds().toString().padStart(3, '0')) / 1000
         const lastTimeDiff =
           lastTime.getMinutes() === 59
-            ? 60 - (lastTime.getSeconds() + lastTime.getMilliseconds() / 1000)
-            : lastTime.getSeconds() + lastTime.getMilliseconds() / 1000
+            ? 60 - (lastTime.getSeconds() + parseInt('0.' + lastTime.getMilliseconds().toString().padStart(3, '0')) / 1000)
+            : lastTime.getSeconds() + parseInt('0.' + lastTime.getMilliseconds().toString().padStart(3, '0')) / 1000
         // 前回より良ければ保存
         if (lastTimeDiff > newTimeDiff) {
           await Tags.update({ best: best }, { where: { id: id } })
@@ -334,8 +334,8 @@ client.on('messageCreate', async (message: Message) => {
         const newTime = new Date(createdAt)
         const newTimeDiff =
           newTime.getMinutes() === 59
-            ? 60 - newTime.getSeconds()
-            : newTime.getSeconds()
+            ? 60 - (newTime.getSeconds() + parseInt('0.' + newTime.getMilliseconds().toString().padStart(3, '0')) / 1000)
+            : newTime.getSeconds() + parseInt('0.' + newTime.getMilliseconds().toString().padStart(3, '0'))
         // レートを計算
         let rate = Math.round(6200 / (newTimeDiff + 2.1))
         if (newTime.getMinutes() === 59) {
@@ -595,7 +595,7 @@ client.on('messageCreate', async (message: Message) => {
   // 送信時刻を返信
   if (message.content.startsWith('しゃろしゃろ')) {
     const date = new Timestamp(message.createdAt)
-    message.reply(`送信時刻：${date.getYear()}/${date.getMonth()}/${date.getDay()} ${date.getHour()}:${date.getMinute()}:${date.getSeconds()}.${date.getMilliseconds()}`)
+    message.reply(`送信時刻：${date.getYear()}/${date.getMonth()}/${date.getDay()} ${date.getHour()}:${date.getMinute()}:${date.getSeconds()}.${parseInt('0.' + date.getMilliseconds().toString().padStart(3, '0'))}`)
   }
   if (message.content.startsWith('&set')) {
     // @ts-ignore
