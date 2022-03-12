@@ -265,12 +265,12 @@ client.on('messageCreate', async (message: Message) => {
         // 差分を計算
         const newTimeDiff =
           newTime.getMinutes() === 59
-            ? 60 - (newTime.getSeconds() + parseInt('0.' + newTime.getMilliseconds().toString().padStart(3, '0')) / 1000)
-            : newTime.getSeconds() + parseInt('0.' + newTime.getMilliseconds().toString().padStart(3, '0')) / 1000
+            ? 60 - (newTime.getSeconds() + parseInt('0.' + newTime.getMilliseconds().toString().padStart(3, '0')))
+            : newTime.getSeconds() + parseInt('0.' + newTime.getMilliseconds().toString().padStart(3, '0'))
         const lastTimeDiff =
           lastTime.getMinutes() === 59
-            ? 60 - (lastTime.getSeconds() + parseInt('0.' + lastTime.getMilliseconds().toString().padStart(3, '0')) / 1000)
-            : lastTime.getSeconds() + parseInt('0.' + lastTime.getMilliseconds().toString().padStart(3, '0')) / 1000
+            ? 60 - (lastTime.getSeconds() + parseInt('0.' + lastTime.getMilliseconds().toString().padStart(3, '0')))
+            : lastTime.getSeconds() + parseInt('0.' + lastTime.getMilliseconds().toString().padStart(3, '0'))
         // 前回より良ければ保存
         if (lastTimeDiff > newTimeDiff) {
           await Tags.update({ best: best }, { where: { id: id } })
@@ -334,7 +334,7 @@ client.on('messageCreate', async (message: Message) => {
         const newTime = new Date(createdAt)
         const newTimeDiff =
           newTime.getMinutes() === 59
-            ? 60 - (newTime.getSeconds() + parseInt('0.' + newTime.getMilliseconds().toString().padStart(3, '0')) / 1000)
+            ? 60 - (newTime.getSeconds() + parseInt('0.' + newTime.getMilliseconds().toString().padStart(3, '0')))
             : newTime.getSeconds() + parseInt('0.' + newTime.getMilliseconds().toString().padStart(3, '0'))
         // レートを計算
         let rate = Math.round(6200 / (newTimeDiff + 2.1))
