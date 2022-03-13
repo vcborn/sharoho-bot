@@ -13,6 +13,8 @@ import Enmap from 'enmap'
 // dotenvからコンフィグを読み込み
 dotenv.config()
 
+const prefix = process.env.TOKEN ? process.env.TOKEN : '&'
+
 // Sequelizeの設定
 const sequelize = new Sequelize('database', 'user', 'password', {
   host: 'localhost',
@@ -80,7 +82,7 @@ client.once('ready', async () => {
   // 現在のbotのユーザータグを表示
   console.log(client.user?.tag)
   // アクティビティを設定
-  client.user?.setActivity('&set | しゃろしゃろ')
+  client.user?.setActivity(prefix + 'set | しゃろしゃろ')
   // cronで毎日23時58分に実行
   cron.schedule('58 23 * * *', async () => {
     // 全てのリザルトチャンネルを取得
@@ -244,7 +246,7 @@ client.on('messageCreate', async (message: Message) => {
   // botは無視
   if (message.author.bot) return
   // しゃろほー
-  if (message.content.startsWith('しゃろほー')) {
+  if (message.content === 'しゃろほー') {
     // 23:59か00:00
     if (
       (now.getHours() === 23 && now.getMinutes() === 59) ||
@@ -355,10 +357,10 @@ client.on('messageCreate', async (message: Message) => {
     }
   }
   if (
-    message.content.startsWith('ランク') ||
-    message.content.startsWith('らんく') ||
-    message.content.startsWith('rank') ||
-    message.content.startsWith('Rank')
+    message.content === 'ランク' ||
+    message.content === 'らんく' ||
+    message.content === 'rank' ||
+    message.content === 'Rank'
   ) {
     // 送信者のID
     const id = message.author.id
@@ -592,11 +594,11 @@ client.on('messageCreate', async (message: Message) => {
     }
   }
   // 送信時刻を返信
-  if (message.content.startsWith('しゃろしゃろ')) {
+  if (message.content === 'しゃろしゃろ') {
     const date = new Timestamp(message.createdAt)
     message.reply(`送信時刻：${date.getYear()}/${date.getMonth()}/${date.getDay()} ${date.getHour()}:${date.getMinute()}:${date.getSeconds()}.${('000' + date.getMilliseconds()).slice(-3).toString()}`)
   }
-  if (message.content.startsWith('&set')) {
+  if (message.content === prefix + 'set') {
     // @ts-ignore
     if (client.settings.has('guild')) {
       if (
@@ -628,7 +630,7 @@ client.on('messageCreate', async (message: Message) => {
       message.reply('リザルトチャンネルに設定しました。')
     }
   }
-  if (message.content.startsWith('&remove')) {
+  if (message.content === prefix + 'remove') {
     // もしguild項目があれば
     // @ts-ignore
     if (client.settings.has('guild')) {
@@ -653,7 +655,7 @@ client.on('messageCreate', async (message: Message) => {
       message.reply('問題が発生しました。管理者に連絡してください。')
     }
   }
-  if (message.content.startsWith('&help')) {
+  if (message.content === prefix + 'help') {
     message.reply({
       embeds: [
         {
@@ -686,7 +688,7 @@ client.on('messageCreate', async (message: Message) => {
       ],
     })
   }
-  if (message.content.startsWith('&about')) {
+  if (message.content === prefix + 'about') {
     message.reply({
       embeds: [
         {
@@ -699,7 +701,7 @@ client.on('messageCreate', async (message: Message) => {
     })
   }
   // ユーザー認証を追加（message.author.idは管理者のユーザーID）
-  if (message.content.startsWith('&res') && message.author.id === '368027170003484673') {
+  if (message.content === prefix + 'res' && message.author.id === '368027170003484673') {
     sendResult()
   }
 })
