@@ -265,12 +265,12 @@ client.on('messageCreate', async (message: Message) => {
         // 差分を計算
         const newTimeDiff =
           newTime.getMinutes() === 59
-            ? 60 - (newTime.getSeconds() + parseFloat('0.' + ('000' + newTime.getMilliseconds()).slice(-3).toString()))
-            : newTime.getSeconds() + parseFloat('0.' + ('000' + newTime.getMilliseconds()).slice(-3).toString())
+            ? 60 - (newTime.getSeconds() + Number('0.' + ('000' + newTime.getMilliseconds()).slice(-3).toString()))
+            : newTime.getSeconds() + Number('0.' + ('000' + newTime.getMilliseconds()).slice(-3).toString())
         const lastTimeDiff =
           lastTime.getMinutes() === 59
-            ? 60 - (lastTime.getSeconds() + parseFloat('0.' + ('000' + lastTime.getMilliseconds()).slice(-3).toString()))
-            : lastTime.getSeconds() + parseFloat('0.' + ('000' + lastTime.getMilliseconds()).slice(-3).toString())
+            ? 60 - (lastTime.getSeconds() + Number('0.' + ('000' + lastTime.getMilliseconds()).slice(-3).toString()))
+            : lastTime.getSeconds() + Number('0.' + ('000' + lastTime.getMilliseconds()).slice(-3).toString())
         // 前回より良ければ保存
         if (lastTimeDiff > newTimeDiff) {
           await Tags.update({ best: best }, { where: { id: id } })
@@ -333,8 +333,8 @@ client.on('messageCreate', async (message: Message) => {
         const newTime = new Date(createdAt)
         const newTimeDiff =
         newTime.getMinutes() === 59
-          ? 60 - (newTime.getSeconds() + parseFloat('0.' + ('000' + newTime.getMilliseconds()).slice(-3).toString()))
-          : newTime.getSeconds() + parseFloat('0.' + ('000' + newTime.getMilliseconds()).slice(-3).toString())
+          ? 60 - (newTime.getSeconds() + Number('0.' + ('000' + newTime.getMilliseconds()).slice(-3).toString()))
+          : newTime.getSeconds() + Number('0.' + ('000' + newTime.getMilliseconds()).slice(-3).toString())
         // レートを計算
         let rate = Math.round(6200 / (newTimeDiff + 2.1))
         if (newTime.getMinutes() === 59) {
