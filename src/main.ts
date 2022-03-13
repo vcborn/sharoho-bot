@@ -269,7 +269,7 @@ client.on('messageCreate', async (message: Message) => {
             : newTime.getSeconds() + parseFloat('0.' + ('000' + newTime.getMilliseconds()).slice(-3))
         const lastTimeDiff =
           lastTime.getMinutes() === 59
-            ? 60 - (lastTime.getSeconds() + parseFloat('0.' + ('000' + lastTime.getMilliseconds()).slice(-3))
+            ? 60 - (lastTime.getSeconds() + parseFloat('0.' + ('000' + lastTime.getMilliseconds()).slice(-3)))
             : lastTime.getSeconds() + parseFloat('0.' + lastTime.getMilliseconds().toString().padStart(3, '0'))
         // 前回より良ければ保存
         if (lastTimeDiff > newTimeDiff) {
