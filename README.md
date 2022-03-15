@@ -86,3 +86,23 @@ Partは参加回数です。
 ### 2回目以降
 
 ![later](https://latex.codecogs.com/gif.latex?%5Cdpi%7B120%7D%20%5Cbg_white%20Rate%20%3D%20%5Cleft%5B%20%5Cfrac%7B6000%20&plus;%20Part%7D%7BDiff%20&plus;%201.98%7D%20%5Cright%5D)
+
+## Q&A
+
+**Q:** SequelizeのDATE型を使わないんですか？  
+**A:** 変えるのが面倒くさい
+
+##
+
+**Q:** SQLite以外のサポートを予定してますか？  
+**A:** 今後対応予定
+
+## 
+
+**Q:** ファイル分割した方がメンテしやすくないですか？   
+**A:** ワイトもそう思います
+
+## 
+
+**Q:** SequelizeとEnmap分ける意味ありました？  
+**A:** あったのかもしれない
