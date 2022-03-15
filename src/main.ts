@@ -13,7 +13,7 @@ import Enmap from 'enmap'
 // dotenvからコンフィグを読み込み
 dotenv.config()
 
-const prefix = process.env.TOKEN ? process.env.TOKEN : '&'
+const prefix = process.env.PREFIX ? process.env.PREFIX : '&'
 
 // Sequelizeの設定
 const sequelize = new Sequelize('database', 'user', 'password', {
