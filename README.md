@@ -87,6 +87,20 @@ Partは参加回数です。
 
 ![later](https://latex.codecogs.com/gif.latex?%5Cdpi%7B120%7D%20%5Cbg_white%20Rate%20%3D%20%5Cleft%5B%20%5Cfrac%7B6000%20&plus;%20Part%7D%7BDiff%20&plus;%201.98%7D%20%5Cright%5D)
 
+## 画像処理
+
+### ランク
+```mermaid
+graph LR
+    A["Sequelize"] --> B["Vega-Lite(SVG)"] --> C["svg-to-img(PNG)"] --> D["Discord"]
+```
+
+### リザルト
+```mermaid
+graph LR
+    A["Sequelize"] --> B["node-html-to-image(PNG)"] --> C["Discord"]
+```
+
 ## Q&A
 
 **Q:** SequelizeのDATE型を使わないんですか？  
