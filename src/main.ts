@@ -284,6 +284,7 @@ client.on('messageCreate', async (message: Message) => {
         // フライング処理
         if (date.getMinute() === 59) {
           rate -= 600
+          rate = rate < 0 ? 0 : rate
           now.setDate(date.getDay() + 1)
         }
         const today = date.getMinute() === 59
