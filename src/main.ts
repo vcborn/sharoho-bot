@@ -295,26 +295,25 @@ client.on('messageCreate', async (message: Message) => {
           : `${date.getYear()}/${date.getMonth()}/${date.getDay()} ${date.getHour()}:${date.getMinute()}:${date.getSeconds()}`
 
         // 重複処理
-        if (idTag.get('record')[idTag.get('record').length - 1].date.slice(0, -9) === `${now.getFullYear()}/${(
+        if (idTag.get('record')[idTag.get('record').length - 1].date.slice(0, -9) !== `${now.getFullYear()}/${(
             '0' +
             (now.getMonth() + 1)
           ).slice(-2)}/${('0' + now.getDate()).slice(-2)}`) {
-          return
+          // 当日記録の作成
+          const data = {
+            date: today,
+            rate: rate,
+          }
+          // 記録追加
+          record.push(data)
+          // 参加回数追加
+          idTag.increment('part')
+          // データ更新
+          await Tags.update(
+            { name: author, last: createdAt, record: record, rating: rate },
+            { where: { id: id } },
+          )
         }
-        // 当日記録の作成
-        const data = {
-          date: today,
-          rate: rate,
-        }
-        // 記録追加
-        record.push(data)
-        // 参加回数追加
-        idTag.increment('part')
-        // データ更新
-        await Tags.update(
-          { name: author, last: createdAt, record: record, rating: rate },
-          { where: { id: id } },
-        )
       } else {
         // 記録用の初期データを作成
         const data = {
