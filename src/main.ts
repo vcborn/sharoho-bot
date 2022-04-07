@@ -273,10 +273,7 @@ client.on('messageCreate', async (message: Message) => {
           lastTime.getMinutes() === 59
             ? 60 - (lastTime.getSeconds() + Number('0.' + ('000' + lastTime.getMilliseconds()).slice(-3).toString()))
             : lastTime.getSeconds() + Number('0.' + ('000' + lastTime.getMilliseconds()).slice(-3).toString())
-        // 前回より良ければ保存
-        if (lastTimeDiff > newTimeDiff) {
-          await Tags.update({ best: best }, { where: { id: id } })
-        }
+        
         // ランク計算
         let rate = Math.round((6000 + idTag.get('part')) / (newTimeDiff + 1.98))
         const record: any = idTag.get('record')
@@ -303,6 +300,10 @@ client.on('messageCreate', async (message: Message) => {
           const data = {
             date: today,
             rate: rate,
+          }
+          // 前回より良ければ保存
+          if (lastTimeDiff > newTimeDiff) {
+            await Tags.update({ best: best }, { where: { id: id } })
           }
           // 記録追加
           record.push(data)
