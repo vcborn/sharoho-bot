@@ -20,6 +20,7 @@
   "homepage": "https://github.com/vcborn/sharoho-bot#readme",
   "dependencies": {
     "@types/sharp": "^0.29.5",
+    "date-fns": "^2.28.0",
     "discord.js": "^13.6.0",
     "dotenv": "^16.0.0",
     "enmap": "^5.8.8",

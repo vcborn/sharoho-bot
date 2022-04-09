@@ -9,6 +9,7 @@ import { View, parse } from 'vega'
 import fs from 'fs'
 import { from } from 'svg-to-img'
 import Enmap from 'enmap'
+import { format } from 'date-fns'
 
 // dotenvからコンフィグを読み込み
 dotenv.config()
@@ -125,10 +126,7 @@ async function sendResult() {
   // eslint-disable-next-line array-callback-return
   const eachData = db.map((item: any, index) => {
     // 今日の日付と最終参加記録の日付がマッチするか
-    if (JSON.parse(item.record)[JSON.parse(item.record).length - 1].date.slice(0, -9) === `${now.getFullYear()}/${(
-      '0' +
-      (now.getMonth() + 1)
-    ).slice(-2)}/${('0' + now.getDate()).slice(-2)}`) {
+    if (JSON.parse(item.record)[JSON.parse(item.record).length - 1].date.slice(0, -9) === format(now, 'yyyy/MM/dd')) {
       let diff = null
       // もし新規であればNEW、そうでなければ符号付で差分を表示
       if (JSON.parse(item.record).length === 1) {
@@ -196,10 +194,7 @@ async function sendResult() {
   padding-left:4px;
   }
   </style>
-  <h2>SHAROHO RESULT (${now.getFullYear()}/${(
-        '0' +
-        (now.getMonth() + 1)
-      ).slice(-2)}/${('0' + now.getDate()).slice(-2)})</h2>
+  <h2>SHAROHO RESULT (${format(now, 'yyyy/MM/dd')})</h2>
   <table style="margin-left:auto;margin-right:auto;width:80%;border-collapse:collapse">
   <thead>
     <tr>
@@ -232,14 +227,13 @@ async function sendResult() {
     // チャンネルに送信
     // @ts-ignore
     client.channels.cache.get(channel).send({
-      content: `SHAROHO RESULT (${now.getFullYear()}/${(
-        '0' +
-        (now.getMonth() + 1)
-      ).slice(-2)}/${('0' + now.getDate()).slice(-2)})`,
+      content: `SHAROHO RESULT (${format(now, 'yyyy/MM/dd')})`,
       files: [file],
     })
   })
 }
+
+const env = process.env.NODE_ENV || 'production'
 
 client.on('messageCreate', async (message: Message) => {
   const now = new Date()
@@ -250,7 +244,8 @@ client.on('messageCreate', async (message: Message) => {
     // 23:59か00:00
     if (
       (now.getHours() === 23 && now.getMinutes() === 59) ||
-      (now.getHours() === 0 && now.getMinutes() === 0)
+      (now.getHours() === 0 && now.getMinutes() === 0) ||
+      env === 'development'
     ) {
       const author = message.author.username
       const id = message.author.id
@@ -266,36 +261,30 @@ client.on('messageCreate', async (message: Message) => {
         const lastTime = new Date(idTag.get('last'))
         // 差分を計算
         const newTimeDiff =
-          newTime.getMinutes() === 59
+          newTime.getMinutes() >= 31
             ? 60 - (newTime.getSeconds() + Number('0.' + ('000' + newTime.getMilliseconds()).slice(-3).toString()))
             : newTime.getSeconds() + Number('0.' + ('000' + newTime.getMilliseconds()).slice(-3).toString())
         const lastTimeDiff =
-          lastTime.getMinutes() === 59
+          lastTime.getMinutes() >= 31
             ? 60 - (lastTime.getSeconds() + Number('0.' + ('000' + lastTime.getMilliseconds()).slice(-3).toString()))
             : lastTime.getSeconds() + Number('0.' + ('000' + lastTime.getMilliseconds()).slice(-3).toString())
-        
+
         // ランク計算
         let rate = Math.round((6000 + idTag.get('part')) / (newTimeDiff + 1.98))
         const record: any = idTag.get('record')
 
         // フライング処理
-        if (date.getMinute() === 59) {
+        if (Number(date.getMinute()) >= 31) {
           rate -= 600
           rate = rate < 0 ? 0 : rate
-          now.setDate(date.getDay() + 1)
+          now.setDate(Number(date.getDay()) + 1)
         }
-        const today = date.getMinute() === 59
-          ? `${now.getFullYear()}/${(
-          '0' +
-          (now.getMonth() + 1)
-        ).slice(-2)}/${('0' + now.getDate()).slice(-2)} ${date.getHour()}:${date.getMinute()}:${date.getSeconds()}`
+        const today = date.getMinute() >= 31
+          ? `${format(now, 'yyyy/MM/dd')} ${date.getHour()}:${date.getMinute()}:${date.getSeconds()}`
           : `${date.getYear()}/${date.getMonth()}/${date.getDay()} ${date.getHour()}:${date.getMinute()}:${date.getSeconds()}`
 
         // 重複処理
-        if (idTag.get('record')[idTag.get('record').length - 1].date.slice(0, -9) !== `${now.getFullYear()}/${(
-            '0' +
-            (now.getMonth() + 1)
-          ).slice(-2)}/${('0' + now.getDate()).slice(-2)}`) {
+        if (idTag.get('record')[idTag.get('record').length - 1].date.slice(0, -9) !== format(now, 'yyyy/MM/dd')) {
           // 当日記録の作成
           const data = {
             date: today,
