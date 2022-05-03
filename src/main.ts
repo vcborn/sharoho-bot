@@ -575,7 +575,7 @@ client.on('messageCreate', async (message: Message) => {
               files: [file],
             })
           } catch (e) {
-            console.log(e)
+            message.reply('エラーが発生しました。\n再度送信してください。')
           }
         })()
       })
