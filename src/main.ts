@@ -324,13 +324,15 @@ client.on('messageCreate', async (message: Message) => {
         // 差分を計算
         const newTime = new Date(createdAt)
         const newTimeDiff =
-        newTime.getMinutes() === 59
+        newTime.getMinutes() >= 31
           ? 60 - (newTime.getSeconds() + Number('0.' + ('000' + newTime.getMilliseconds()).slice(-3).toString()))
           : newTime.getSeconds() + Number('0.' + ('000' + newTime.getMilliseconds()).slice(-3).toString())
         // レートを計算
         let rate = Math.round(6200 / (newTimeDiff + 2.1))
-        if (newTime.getMinutes() === 59) {
+        if (newTime.getMinutes() >= 31) {
           rate -= 600
+          rate = rate < 0 ? 0 : rate
+          now.setDate(Number(date.getDay()) + 1)
         }
         // 参加回数を追加
         tag.increment('part')
