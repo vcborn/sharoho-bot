@@ -553,10 +553,10 @@ client.on('messageCreate', async (message: Message) => {
       // SVGを生成
       view.toSVG().then((svg) => {
         ;(async () => {
-          // PNGに変換
-          const image = await from(svg).toPng()
-
           try {
+            // PNGに変換
+            const image = await from(svg).toPng()
+            
             // 書き込み
             fs.writeFileSync('dest.png', image)
             const file = new MessageAttachment('./dest.png')
