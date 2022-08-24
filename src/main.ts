@@ -1,4 +1,4 @@
-import { Message, Client, MessageAttachment } from 'discord.js'
+import { Message, Client, AttachmentBuilder } from 'discord.js'
 import dotenv from 'dotenv'
 import { Sequelize, STRING, INTEGER, JSON as SJSON } from 'sequelize'
 import { timestamp as Timestamp } from 'timestamp-conv'
@@ -63,7 +63,7 @@ const Tags = sequelize.define('tags', {
 Tags.sync()
 
 const client = new Client({
-  intents: ['GUILDS', 'GUILD_MEMBERS', 'GUILD_MESSAGES'],
+  intents: ['Guilds', 'GuildMembers', 'GuildMessages', 'MessageContent'],
 })
 
 // enmapの設定
@@ -91,10 +91,14 @@ client.once('ready', async () => {
     client.settings.get('guild').map(async (guild: any) => {
       const channel = Object.values(guild)[1]
       // メッセージを送信
-      // @ts-ignore
-      client.channels.cache.get(channel).send({
-        content: 'しゃろしゃろ',
-      })
+      try {
+        // @ts-ignore
+        client.channels.cache.get(channel).send({
+          content: 'しゃろしゃろ',
+        })
+      } catch(e) {
+        console.log(e)
+      }
     })
   })
   // cronで毎日0時3分に実行
@@ -221,15 +225,19 @@ async function sendResult() {
   // @ts-ignore
   client.settings.get('guild').map(async (guild: any) => {
     // 添付ファイルに追加
-    const file = new MessageAttachment('./today.png')
+    const file = new AttachmentBuilder('./today.png')
     // チャンネルIDを取得
     const channel = Object.values(guild)[1]
     // チャンネルに送信
+    try {
     // @ts-ignore
-    client.channels.cache.get(channel).send({
-      content: `SHAROHO RESULT (${format(now, 'yyyy/MM/dd')})`,
-      files: [file],
-    })
+      client.channels.cache.get(channel).send({
+        content: `SHAROHO RESULT (${format(now, 'yyyy/MM/dd')})`,
+        files: [file],
+        })
+    } catch(e) {
+      console.log(e)
+    }
   })
 }
 
@@ -279,7 +287,7 @@ client.on('messageCreate', async (message: Message) => {
           rate = rate < 0 ? 0 : rate
           now.setDate(Number(date.getDay()) + 1)
         }
-        const today = date.getMinute() >= 31
+        const today = Number(date.getMinute()) >= 31
           ? `${format(now, 'yyyy/MM/dd')} ${date.getHour()}:${date.getMinute()}:${date.getSeconds()}`
           : `${date.getYear()}/${date.getMonth()}/${date.getDay()} ${date.getHour()}:${date.getMinute()}:${date.getSeconds()}`
 
@@ -559,7 +567,7 @@ client.on('messageCreate', async (message: Message) => {
             
             // 書き込み
             fs.writeFileSync('dest.png', image)
-            const file = new MessageAttachment('./dest.png')
+            const file = new AttachmentBuilder('./dest.png')
             // 返信
             message.reply({
               content:
