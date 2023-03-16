@@ -171,19 +171,27 @@ async function sendResult() {
   // 登録されている全てのリザルトチャンネルを取得
   // @ts-ignore
   client.settings.get("guild").map(async (guild: any) => {
-    // 添付ファイルに追加
-    const file = new AttachmentBuilder("./", { name: "today.png" })
-    // チャンネルIDを取得
-    const channel = Object.values(guild)[1]
-    // チャンネルに送信
-    try {
+    if (eachData.length > 0) {
+      // 添付ファイルに追加
+      const file = new AttachmentBuilder("./", { name: "today.png" })
+      // チャンネルIDを取得
+      const channel = Object.values(guild)[1]
+      // チャンネルに送信
+      try {
+        // @ts-ignore
+        client.channels.cache.get(channel).send({
+          content: `SHAROHO RESULT (${format(now, 'yyyy/MM/dd')})`,
+          files: [file],
+        })
+      } catch (e) {
+        console.log(e)
+      }
+    } else {
+      const channel = Object.values(guild)[1]
       // @ts-ignore
       client.channels.cache.get(channel).send({
-        content: `SHAROHO RESULT (${format(now, 'yyyy/MM/dd')})`,
-        files: [file],
+          content: "本日の参加者はいませんでした",
       })
-    } catch (e) {
-      console.log(e)
     }
   })
 }
