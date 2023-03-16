@@ -5,17 +5,19 @@ module.exports = {
     node: true
   },
   extends: [
-    'standard'
+    "standard"
   ],
-  parser: '@typescript-eslint/parser',
+  parser: "@typescript-eslint/parser",
   parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module'
+    ecmaVersion: "latest",
+    sourceType: "module"
   },
   plugins: [
-    '@typescript-eslint'
+    "@typescript-eslint"
   ],
   rules: {
-    'comma-dangle': ['error', 'only-multiline']
+    "comma-dangle": ["error", "only-multiline"],
+    "space-before-function-paren": 0,
+    quotes: [2, "double", { avoidEscape: true }]
   }
 }
