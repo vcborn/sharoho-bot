@@ -31,5 +31,6 @@ const Records = sequelize.define<RecordsInstance>("records", {
 })
 
 Records.belongsTo(Users)
+Users.hasMany(Records, { foreignKey: "userId" })
 
 export default Records

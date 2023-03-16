@@ -1,6 +1,5 @@
 import { DataTypes, Model } from "sequelize"
 import { sequelize } from "."
-import Records from "./records"
 
 interface UsersAttributes {
   id: string;
@@ -49,7 +48,5 @@ const Users = sequelize.define<UsersInstance>("users", {
   // 最終参加（YYYY/MM/DD hh:mm:ss.ms）
   last: DataTypes.DATE,
 })
-
-Users.hasMany(Records, { foreignKey: "userId" })
 
 export default Users
