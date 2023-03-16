@@ -22,7 +22,7 @@ Users.sync()
 Records.sync()
 
 const client = new Client({
-  intents: ["Guilds", "GuildMembers", "GuildMessages"],
+  intents: ["Guilds", "GuildMembers", "GuildMessages", "MessageContent"],
 })
 
 // enmapの設定
@@ -50,10 +50,14 @@ client.once("ready", async () => {
     client.settings.get("guild").map(async (guild: any) => {
       const channel = Object.values(guild)[1]
       // メッセージを送信
-      // @ts-ignore
-      client.channels.cache.get(channel).send({
-        content: "しゃろしゃろ",
-      })
+      try {
+        // @ts-ignore
+        client.channels.cache.get(channel).send({
+          content: "しゃろしゃろ",
+        })
+      } catch (e) {
+        console.log(e)
+      }
     })
   })
   // cronで毎日0時3分に実行
@@ -172,11 +176,15 @@ async function sendResult() {
     // チャンネルIDを取得
     const channel = Object.values(guild)[1]
     // チャンネルに送信
-    // @ts-ignore
-    client.channels.cache.get(channel).send({
-      content: `SHAROHO RESULT (${format(now, "yyyy/MM/dd")})`,
-      files: [file],
-    })
+    try {
+      // @ts-ignore
+      client.channels.cache.get(channel).send({
+        content: `SHAROHO RESULT (${format(now, 'yyyy/MM/dd')})`,
+        files: [file],
+      })
+    } catch (e) {
+      console.log(e)
+    }
   })
 }
 
@@ -500,9 +508,10 @@ client.on("messageCreate", async (message: Message) => {
       // SVGを生成
       view.toSVG().then((svg) => {
         ; (async () => {
-          // PNGに変換
-          const image = await from(svg).toPng()
           try {
+            // PNGに変換
+            const image = await from(svg).toPng()
+
             // 書き込み
             fs.writeFileSync("dest.png", image)
             const file = new AttachmentBuilder("./", { name: "dest.png" })
