@@ -103,25 +103,25 @@ async function sendResult() {
     const rec = format(user.last, "HH:mm:ss.") + ("000" + user.last.getMilliseconds()).slice(-3).toString()
     // レートごとに色を変える
     let bgcolor = "#fff"
-    if (user.rating >= 2800) {
+    if (Number(user.rating) >= 2800) {
       bgcolor = "rgba(255,0,0,0.3)"
-    } else if (user.rating >= 2400) {
+    } else if (Number(user.rating) >= 2400) {
       bgcolor = "rgba(255,128,5,0.3)"
-    } else if (user.rating >= 2000) {
+    } else if (Number(user.rating) >= 2000) {
       bgcolor = "rgba(192,192,0,0.3)"
-    } else if (user.rating >= 1600) {
+    } else if (Number(user.rating) >= 1600) {
       bgcolor = "rgba(0,0,255,0.3)"
-    } else if (user.rating >= 1200) {
+    } else if (Number(user.rating) >= 1200) {
       bgcolor = "rgba(192,192,0,0.3)"
-    } else if (user.rating >= 800) {
+    } else if (Number(user.rating) >= 800) {
       bgcolor = "rgba(0,128,0,0.3)"
-    } else if (user.rating >= 400) {
+    } else if (Number(user.rating) >= 400) {
       bgcolor = "rgba(128,64,0,0.3)"
     } else {
       bgcolor = "rgba(128,128,128,0.3)"
     }
     return (
-      `<tr style="background-color": "${bgcolor}">
+      `<tr style="background-color: ${bgcolor}">
     <td style="background-color:#fff">${index + 1}</td>
     <td>${user.name}</td>
     <td>${rec}</td>
