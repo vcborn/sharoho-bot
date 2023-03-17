@@ -87,12 +87,13 @@ async function sendResult() {
   // eslint-disable-next-line array-callback-return
   const eachData = db.map(async (item: any, index: number) => {
     const user: any = await Users.findOne({ where: { id: item.userId } })
+    const recordsLength: any = await Records.count({ where: { userId: item.userId })
     if (index === 0) {
       user.increment("win")
     }
     let diff = ""
     // もし新規であればNEW、そうでなければ符号付で差分を表示
-    if (JSON.parse(item.record).length === 1) {
+    if (recordsLength === 1) {
       diff = "NEW"
     } else {
       diff = Math.sign(user.rating - item.rate) === 1
