@@ -85,7 +85,7 @@ async function sendResult() {
   }
   // 各行ごとに呼び出し
   // eslint-disable-next-line array-callback-return
-  const eachData = db.map(async (item: any, index: number) => {
+  const eachData = await Promise.all(db.map(async (item: any, index: number) => {
     const user: any = await Users.findOne({ where: { id: item.userId } })
     const recordsLength: any = await Records.count({ where: { userId: item.userId } })
     if (index === 0) {
@@ -129,7 +129,7 @@ async function sendResult() {
     <td>${diff}</td>
     </tr>`
     )
-  })
+  }))
   // デフォルトの表を作成
   const html = `<html>
   <body style="text-align:center;font-family:"Noto Sans JP",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";padding-top:5rem;padding-bottom:2.5rem;">
