@@ -100,7 +100,7 @@ async function sendResult() {
         ? "+" + (user.rating - item.rate)
         : (user.rating - item.rate).toString()
     }
-    const rec = user.last.substring(11)
+    const rec = format(user.last, "hh:mm:ss.") + ("000" + user.last.getMilliseconds()).slice(-3).toString()
     // レートごとに色を変える
     let bgcolor = "#fff"
     if (item.rating >= 2800) {
@@ -214,7 +214,7 @@ client.on("messageCreate", async (message: Message) => {
       const id = message.author.id
       const date = new Date(message.createdAt)
       // YYYY-MM-DD hh:mm:ss.ms
-      const createdAt = `${format(date, "yyyy/MM/dd HH:mm:ss")}.${date.getMilliseconds()}`
+      const createdAt = `${format(date, "yyyy/MM/dd HH:mm:ss")}.${("000" + date.getMilliseconds()).slice(-3).toString()}`
       // ユーザーIDで検索
       const user = await Users.findOne({ where: { id } })
       const best = createdAt.substring(11)
