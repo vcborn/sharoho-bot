@@ -132,7 +132,7 @@ async function sendResult() {
   }))
   // デフォルトの表を作成
   const html = `<html>
-  <body style="text-align:center;font-family:"Noto Sans JP",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";padding-top:5rem;padding-bottom:2.5rem;">
+  <body style="text-align:center;font-family:'Noto Sans JP',Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji';padding-top:5rem;padding-bottom:2.5rem;">
   <style>
   th, td {
   border:1px solid black;
