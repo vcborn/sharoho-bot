@@ -121,11 +121,11 @@ async function sendResult() {
       bgcolor = "rgba(128,128,128,0.3)"
     }
     return (
-      `"<tr style="background - color: "${bgcolor}">
+      `"<tr style="background-color": "${bgcolor}">
     <td style="background-color:#fff">${index + 1}</td>
-    <td>${item.name}</td>
+    <td>${user.name}</td>
     <td>${rec}</td>
-    <td>${item.rating}</td>
+    <td>${user.rating}</td>
     <td>${diff}</td>
     </tr>`
     )
