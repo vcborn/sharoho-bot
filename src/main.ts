@@ -100,7 +100,7 @@ async function sendResult() {
         ? "+" + (user.rating - item.rate)
         : (user.rating - item.rate).toString()
     }
-    const rec = format(user.last, "hh:mm:ss.") + ("000" + user.last.getMilliseconds()).slice(-3).toString()
+    const rec = format(user.last, "HH:mm:ss.") + ("000" + user.last.getMilliseconds()).slice(-3).toString()
     // レートごとに色を変える
     let bgcolor = "#fff"
     if (item.rating >= 2800) {
@@ -121,7 +121,7 @@ async function sendResult() {
       bgcolor = "rgba(128,128,128,0.3)"
     }
     return (
-      `"<tr style="background-color": "${bgcolor}">
+      `<tr style="background-color": "${bgcolor}">
     <td style="background-color:#fff">${index + 1}</td>
     <td>${user.name}</td>
     <td>${rec}</td>
