@@ -174,7 +174,7 @@ async function sendResult() {
     try {
       if (eachData.length > 0) {
         // 添付ファイルに追加
-        const file = new AttachmentBuilder("./", { name: "today.png" })
+        const file = new AttachmentBuilder("./today.png")
         // チャンネルIDを取得
         const channel = Object.values(guild)[1]
         // @ts-ignore
@@ -521,7 +521,7 @@ client.on("messageCreate", async (message: Message) => {
 
             // 書き込み
             fs.writeFileSync("dest.png", image)
-            const file = new AttachmentBuilder("./", { name: "dest.png" })
+            const file = new AttachmentBuilder("./dest.png")
             // 返信
             message.reply({
               content:
