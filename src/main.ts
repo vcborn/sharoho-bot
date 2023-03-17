@@ -87,7 +87,7 @@ async function sendResult() {
   // eslint-disable-next-line array-callback-return
   const eachData = db.map(async (item: any, index: number) => {
     const user: any = await Users.findOne({ where: { id: item.userId } })
-    const recordsLength: any = await Records.count({ where: { userId: item.userId })
+    const recordsLength: any = await Records.count({ where: { userId: item.userId } })
     if (index === 0) {
       user.increment("win")
     }
