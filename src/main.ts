@@ -254,7 +254,7 @@ client.on("messageCreate", async (message: Message) => {
           raw: true,
         })
         // 重複処理
-        if (records.length > 0) {
+        if (records.length === 0) {
           // 前回より良ければ保存
           if (lastTimeDiff > newTimeDiff) {
             await Users.update({ best }, { where: { id } })
