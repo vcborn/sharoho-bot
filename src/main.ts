@@ -96,9 +96,9 @@ async function sendResult() {
     if (recordsLength === 1) {
       diff = "NEW"
     } else {
-      diff = Math.sign(user.rating - item.rate) === 1
-        ? "+" + (user.rating - item.rate)
-        : (user.rating - item.rate).toString()
+      diff = Math.sign(Number(user.rating) - Number(item.rate)) === 1
+        ? "+" + (Number(user.rating) - Number(item.rate))
+        : (Number(user.rating) - Number(item.rate)).toString()
     }
     const rec = format(user.last, "HH:mm:ss.") + ("000" + user.last.getMilliseconds()).slice(-3).toString()
     // レートごとに色を変える
